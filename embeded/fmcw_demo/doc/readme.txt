@@ -1,5 +1,5 @@
 基本功能：
-1. 调频控制
+1. 调频控制dac-timer
 2. spi配前端寄存器
 3. adc-dma-timer: 200us/128points/2独立通道
 4. USB虚拟串口传中频
