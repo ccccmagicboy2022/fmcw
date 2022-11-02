@@ -47,8 +47,7 @@ Users can modify the demo according to the upgrade mode of their chip platform o
 #ifdef SUPPORT_MCU_FIRM_UPDATE
 #include "mcu_ota_handler.h"
 #include "string.h"
-#include "bluetooth.h"
-#include "flash_def.h"
+#include "sys.h"
 
 #if 0
 /*****************************************************************************

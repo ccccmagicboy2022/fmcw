@@ -1,20 +1,27 @@
 #ifndef _SYS_H
 #define _SYS_H
 
-#include "stdint.h"
-#define ALL_UPLOAD_DELAY  1
-#define     __IO    volatile
-
-#include "stdio.h"
 #include "stm32f4xx.h"
 #include "arm_math.h"
 #include "bluetooth.h"
 #include "ringbuffer.h"
-#include "adc.h"
-#include "led.h"
-#include "timer.h"
 
-typedef int64_t  s64;
+#include "mcu429_hal.h"
+#include "uart_hal.h"
+#include "radar_hal.h"
+#include "usb_hs_hal.h"
+#include "fpga_hal.h"
+
+#include "SEGGER_RTT.h"
+#include "sysclk.h"
+
+#define SEGGER_RTT_IN_RAM   1
+
+#define CV_LOG(fmt, ...) \
+do \
+{ \
+        SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__); \
+}while(0)
 
 // Report related parameters
 typedef struct
