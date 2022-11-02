@@ -2,5 +2,6 @@
 #define _B96F1637_7840_479F_B02D_701B368CF843_
 
 void radar_init(void);
+void spi4_init(void);
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_
