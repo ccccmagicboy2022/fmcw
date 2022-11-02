@@ -154,7 +154,18 @@ void SysTick_Handler(void)
 }*/
 
 /**
-  * @}
+  * @brief  uart1 rev handler
+  * @param  None
+  * @retval None
   */ 
-
+void USART1_IRQHandler(void)
+{
+    char temp;
+    
+    if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
+    {
+        temp = USART_ReceiveData(USART1);
+        uart_receive_input(temp);
+    }
+}
 

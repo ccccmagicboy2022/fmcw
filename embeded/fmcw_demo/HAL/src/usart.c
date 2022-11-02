@@ -1,111 +1,53 @@
 #include "usart.h"
 #include "sys.h"
 
-#ifdef O1_DATA_STREAM
-extern uint8_t sampling_en;
-
-void en_O1_data_stream(uint8_t en)
+void usart1_init(void)
 {
-    if (DISABLE != en)
-    {
-        sampling_en = 1;
-        sample_usart_init();
-    }
-    else
-    {
-        sampling_en = 0;
-        gpio_output_init();
-    }
-}
-#endif
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
+  
+    GPIO_InitTypeDef GPIO_InitStructure;
+    
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-void usart_init(void)
-{
-    GPIO_InitType GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    USART_OverSampling8Cmd(USART1, ENABLE);
 
-    GPIO_InitStructure.Pin        = GPIO_PIN_10;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF_PP;
-    GPIO_InitPeripheral(GPIOB, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin       = GPIO_PIN_11;
-    GPIO_InitStructure.GPIO_Speed = GPIO_INPUT;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-    GPIO_InitPeripheral(GPIOB, &GPIO_InitStructure);
-
-    NVIC_InitType NVIC_InitStructure;
-
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
-
-    NVIC_InitStructure.NVIC_IRQChannel            = USART3_IRQn;
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+    
+    NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd         = ENABLE;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    USART_InitType USART_InitStructure;
-
-    USART_InitStructure.BaudRate            = 115200;
-    USART_InitStructure.WordLength          = USART_WL_8B;
-    USART_InitStructure.StopBits            = USART_STPB_1;
-    USART_InitStructure.Parity              = USART_PE_NO;
-    USART_InitStructure.HardwareFlowControl = USART_HFCTRL_NONE;
-    USART_InitStructure.Mode                = USART_MODE_RX | USART_MODE_TX;
-
-    USART_Init(USART3, &USART_InitStructure);
-    USART_ConfigInt(USART3, USART_INT_RXDNE, ENABLE);
-    USART_Enable(USART3, ENABLE);
+    USART_InitTypeDef USART_InitStructure;
+    
+    USART_InitStructure.USART_BaudRate = 115200;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    USART_Init(USART1, &USART_InitStructure);
+    
+    USART_Cmd(USART1, ENABLE);
 }
 
 int fputc(int ch, FILE* f)
 {
-    USART_SendData(USART3, (uint8_t)ch);
-    while (USART_GetFlagStatus(USART3, USART_FLAG_TXDE) == RESET)
+    USART_SendData(USART1, (uint8_t)ch);
+    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
         ;
 
     return (ch);
 }
-
-
-
-#ifdef O1_DATA_STREAM
-void sample_usart_init(void)
-{
-    GPIO_InitType GPIO_InitStructure;
-
-    GPIO_InitStructure.Pin        = GPIO_PIN_9;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF_PP;
-    GPIO_InitPeripheral(GPIOA, &GPIO_InitStructure);
-
-    USART_InitType USART_InitStructure;
-
-    //USART_InitStructure.BaudRate            = 115200;
-    USART_InitStructure.BaudRate            = 500000;
-    //USART_InitStructure.BaudRate            = 512000;
-    USART_InitStructure.WordLength          = USART_WL_8B;
-    USART_InitStructure.StopBits            = USART_STPB_1;
-    USART_InitStructure.Parity              = USART_PE_NO;
-    USART_InitStructure.HardwareFlowControl = USART_HFCTRL_NONE;
-    USART_InitStructure.Mode                = USART_MODE_TX;
-
-    USART_Init(USART1, &USART_InitStructure);
-    USART_Enable(USART1, ENABLE);
-}
-
-void usart_polling_send_data(uint8_t *data, uint32_t lenth)
-{
-    uart_transmit_output2(0xABu);
-    uart_transmit_output2(0xCDu);
-    for (int i = 0; i < lenth; i++) {
-        uart_transmit_output2(data[i]);
-    }
-}
-
-void usart_polling_send_data_no_head(uint8_t *data, uint32_t lenth)
-{
-    for (int i = 0; i < lenth; i++) {
-        uart_transmit_output2(data[i]);
-    }
-}
-
-#endif

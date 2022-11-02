@@ -861,6 +861,11 @@
               <FileType>1</FileType>
               <FilePath>..\HAL\src\sysclk.c</FilePath>
             </File>
+            <File>
+              <FileName>usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HAL\src\usart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
