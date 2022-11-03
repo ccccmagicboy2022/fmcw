@@ -4,6 +4,7 @@
 #include "sys.h"
 
 #define DAC_DHR12R2_ADDRESS    0x40007414
+#define ADC3_DR_ADDRESS        ((uint32_t)0x4001224C)
 
 void radar_init(void);
 void spi4_init(void);
