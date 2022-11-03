@@ -30,12 +30,12 @@ void dac_init(void)
 void spi4_init(void)
 {
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource2, GPIO_AF_SPI4);
-    GPIO_PinAFConfig(GPIOE, GPIO_PinSource4, GPIO_AF_SPI4);    
+    GPIO_PinAFConfig(GPIOE, GPIO_PinSource4, GPIO_AF_SPI4);
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource5, GPIO_AF_SPI4);
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource6, GPIO_AF_SPI4);
-    
+
     GPIO_InitTypeDef GPIO_InitStructure;
-    
+
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -43,18 +43,18 @@ void spi4_init(void)
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-    
+
     GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4;
-    GPIO_Init(GPIOE, &GPIO_InitStructure);  
-    
+    GPIO_Init(GPIOE, &GPIO_InitStructure);
+
     GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_5;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-    
+
     GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-    
+
     SPI_InitTypeDef  SPI_InitStructure;
-    
+
     SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
     SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
     SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
@@ -64,7 +64,7 @@ void spi4_init(void)
     SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_Init(SPI4, &SPI_InitStructure);
-    
+
     SPI_Cmd(SPI4, ENABLE);
 }
 
@@ -84,7 +84,7 @@ void spi4_write_reg32(uint32_t word)
     send_buf[1] = (word >> 16) & 0xff;
     send_buf[2] = (word >> 8) & 0xff;
     send_buf[3] = (word) & 0xff;
-    
+
     for(i=0;i<4;i++)
     {
         spi4_write_byte(send_buf[i]);
