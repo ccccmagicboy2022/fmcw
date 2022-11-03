@@ -77,10 +77,4 @@ extern void arm_absmax_q31(
         q31_t * pResult,
         uint32_t * pIndex);
 
-#define CV_LOG(fmt, ...) \
-do \
-{ \
-        SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__); \
-}while(0)
-
 #endif
