@@ -28,7 +28,7 @@ uint16_t uhIC3ReadValue1 = 0;
 uint16_t uhIC3ReadValue2 = 0;
 uint16_t uhCaptureNumber = 0;
 uint32_t uwCapture = 0;
-float uwTIM8Freq = 0.0f;
+float uwTIM1Freq = 0.0f;
 
 /** @addtogroup Template_Project
   * @{
@@ -176,26 +176,26 @@ void USART1_IRQHandler(void)
 }
 
 /**
-  * @brief  This function handles TIM8 global interrupt request.
+  * @brief  This function handles TIM1 global interrupt request.
   * @param  None
   * @retval None
   */
-void TIM8_CC_IRQHandler(void)
+void TIM1_CC_IRQHandler(void)
 {
-    if(TIM_GetITStatus(TIM8, TIM_IT_CC1) == SET)
+    if(TIM_GetITStatus(TIM1, TIM_IT_CC1) == SET)
     {
-        /* Clear TIM8 Capture compare interrupt pending bit */
-        TIM_ClearITPendingBit(TIM8, TIM_IT_CC1);
+        /* Clear TIM1 Capture compare interrupt pending bit */
+        TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
         if(uhCaptureNumber == 0)
         {
             /* Get the Input Capture value */
-            uhIC3ReadValue1 = TIM_GetCapture2(TIM8);
+            uhIC3ReadValue1 = TIM_GetCapture2(TIM1);
             uhCaptureNumber = 1;
         }
         else if(uhCaptureNumber == 1)
         {
             /* Get the Input Capture value */
-            uhIC3ReadValue2 = TIM_GetCapture2(TIM8);
+            uhIC3ReadValue2 = TIM_GetCapture2(TIM1);
 
             /* Capture computation */
             if (uhIC3ReadValue2 > uhIC3ReadValue1)
@@ -211,7 +211,7 @@ void TIM8_CC_IRQHandler(void)
                 uwCapture = 0;
             }
             /* Frequency computation */
-            uwTIM8Freq = SystemCoreClock / uwCapture;
+            uwTIM1Freq = SystemCoreClock / uwCapture;
             uhCaptureNumber = 0;
         }
     }

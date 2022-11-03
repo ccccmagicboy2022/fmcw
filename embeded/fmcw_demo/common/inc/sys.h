@@ -17,6 +17,22 @@
 
 #define SEGGER_RTT_IN_RAM   1
 
+///////////////////////////
+#define CHECK_TIME 100
+
+#define CPU_FREQ 168    // M
+#define FREQ_MIN 24025  // G
+#define FREQ_MAX 24225  // G
+#define FREQ_OUT_DIV         (65536 * 16)
+#define SAMPLE_NUM_PER_CHIRP 128
+#define DAC_WORK_RESOLUTION  128
+#define CHIRP_WORK_TIME      200  // us
+#define CHIRP_IDLE_TIME      200  // us
+
+#define DAC_IDEL_RESOLUTION  (DAC_WORK_RESOLUTION * CHIRP_IDLE_TIME / CHIRP_WORK_TIME)
+#define DAC_ALL_RESOLUTION   (DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION)
+///////////////////////////
+
 #define CV_LOG(fmt, ...) \
 do \
 { \

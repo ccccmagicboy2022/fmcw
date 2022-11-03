@@ -3,6 +3,8 @@
 
 #include "sys.h"
 
+#define DAC_DHR12R2_ADDRESS    0x40007414
+
 void radar_init(void);
 void spi4_init(void);
 void spi4_write_byte(uint8_t val);
