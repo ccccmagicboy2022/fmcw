@@ -118,5 +118,5 @@ void free_mem_ex(void   * addr, const char* func_name, int line)
 
 unsigned int GetFreeHeapKBSize(void)
 {
-	return (ALLOC_SIZE - total);
+    return (ALLOC_SIZE - total);
 }

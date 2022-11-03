@@ -1,11 +1,11 @@
 /**
   ******************************************************************************
-  * @file    Project/STM32F4xx_StdPeriph_Templates/stm32f4xx_it.c 
+  * @file    Project/STM32F4xx_StdPeriph_Templates/stm32f4xx_it.c
   * @author  MCD Application Team
   * @version V1.8.1
   * @date    27-January-2022
   * @brief   Main Interrupt Service Routines.
-  *          This file provides template for all exceptions handler and 
+  *          This file provides template for all exceptions handler and
   *          peripherals interrupt service routine.
   ******************************************************************************
   * @attention
@@ -23,6 +23,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 #include "sys.h"
+
+uint16_t uhIC3ReadValue1 = 0;
+uint16_t uhIC3ReadValue2 = 0;
+uint16_t uhCaptureNumber = 0;
+uint32_t uwCapture = 0;
+float uwTIM8Freq = 0.0f;
 
 /** @addtogroup Template_Project
   * @{
@@ -157,15 +163,57 @@ void SysTick_Handler(void)
   * @brief  uart1 rev handler
   * @param  None
   * @retval None
-  */ 
+  */
 void USART1_IRQHandler(void)
 {
     char temp;
-    
+
     if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
     {
         temp = USART_ReceiveData(USART1);
         uart_receive_input(temp);
+    }
+}
+
+/**
+  * @brief  This function handles TIM8 global interrupt request.
+  * @param  None
+  * @retval None
+  */
+void TIM8_CC_IRQHandler(void)
+{
+    if(TIM_GetITStatus(TIM8, TIM_IT_CC1) == SET)
+    {
+        /* Clear TIM8 Capture compare interrupt pending bit */
+        TIM_ClearITPendingBit(TIM8, TIM_IT_CC1);
+        if(uhCaptureNumber == 0)
+        {
+            /* Get the Input Capture value */
+            uhIC3ReadValue1 = TIM_GetCapture2(TIM8);
+            uhCaptureNumber = 1;
+        }
+        else if(uhCaptureNumber == 1)
+        {
+            /* Get the Input Capture value */
+            uhIC3ReadValue2 = TIM_GetCapture2(TIM8);
+
+            /* Capture computation */
+            if (uhIC3ReadValue2 > uhIC3ReadValue1)
+            {
+                uwCapture = (uhIC3ReadValue2 - uhIC3ReadValue1);
+            }
+            else if (uhIC3ReadValue2 < uhIC3ReadValue1)
+            {
+                uwCapture = ((0xFFFF - uhIC3ReadValue1) + uhIC3ReadValue2);
+            }
+            else
+            {
+                uwCapture = 0;
+            }
+            /* Frequency computation */
+            uwTIM8Freq = SystemCoreClock / uwCapture;
+            uhCaptureNumber = 0;
+        }
     }
 }
 
