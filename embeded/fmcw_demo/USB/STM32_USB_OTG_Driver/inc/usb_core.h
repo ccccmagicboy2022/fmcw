@@ -285,9 +285,9 @@ typedef struct USB_OTG_handle
 {
   USB_OTG_CORE_CFGS    cfg;
   USB_OTG_CORE_REGS    regs;
-#ifdef USE_DEVICE_MODE
+//#ifdef USE_DEVICE_MODE
   DCD_DEV     dev;
-#endif
+//#endif
 #ifdef USE_HOST_MODE
   HCD_DEV     host;
 #endif

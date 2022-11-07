@@ -15,6 +15,13 @@
 #include "SEGGER_RTT.h"
 #include "sysclk.h"
 
+#include "usb_core.h"
+#include "usb_conf.h"
+#include "usbd_conf.h"
+#include "usbd_cdc_core.h"
+#include "usbd_usr.h"
+#include "usbd_desc.h"
+
 #define SEGGER_RTT_IN_RAM   1
 
 ///////////////////////////

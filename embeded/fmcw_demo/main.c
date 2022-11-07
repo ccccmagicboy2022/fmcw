@@ -7,9 +7,10 @@ int32_t main(void)
     radar_init();
     usb_hs_init();
     fpga_init();
+    bt_protocol_init();
     
     while (1)
 	{
-		//pass
+		bt_uart_service();
 	}
 }
