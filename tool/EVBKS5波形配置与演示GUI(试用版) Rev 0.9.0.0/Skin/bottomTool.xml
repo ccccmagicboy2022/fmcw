@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window size="1600,1000" sizebox="4,4,6,6" caption="0,0,0,90" mininfo="200,150">
+	<Font id="0" name="宋体" size="18" default="true" />
+	<HorizontalLayout height="30" bkcolor= "0xFF938386">
+		<Button name="versionbtn" align="left" width= "400" bordersize="0" bkcolor= "0xFF938386" textpadding="10,0,0,0" textcolor="#FFFFFFFF" height="30" text="" />
+		<Label bkcolor= "0xFFFFFFFF" padding="30,0,0,0" width= "1" />
+		<Button name="deviceStatusbtn" width= "140" bordersize="0" bkcolor= "0xFF938386" textcolor="#FFFFFFFF" height="30" padding="90,0,0,0" text="Disconnected" />
+		<Label bkcolor= "0xFFFFFFFF" width= "1" />
+		<Button name="deviceInfobtn" width= "120" bordersize="0" bkcolor= "0xFF938386" textcolor="#FFFFFFFF" height="30" text="No Device"/>
+		<Label bkcolor= "0xFFFFFFFF" width= "1" />
+		<Button name="txbtn" width= "120" bordersize="0" bkcolor= "0xFF938386" textcolor="#FFFFFFFF" height="30" text="Tx:N/A"/>
+		<Label bkcolor= "0xFFFFFFFF" width= "1" />
+		<Button name="rxbtn" align="left" width= "200" bordersize="0" bkcolor= "0xFF938386" textpadding="20,0,0,0" textcolor="#FFFFFFFF" height="30" text="Rx:N/A"/>
+	</HorizontalLayout>
+</Window>
+

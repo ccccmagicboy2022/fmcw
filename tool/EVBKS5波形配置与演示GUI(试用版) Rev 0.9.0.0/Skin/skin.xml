@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window size="1600,1000" sizebox="4,4,6,6" caption="0,0,0,90" mininfo="200,150">
+    <Default name="Button" value="textcolor=&quot;#FF000000&quot; disabledtextcolor=&quot;#FF838383&quot; bkcolor=&quot;#FFE1E1E1&quot; hotbkcolor=&quot;#FFE9F1FB&quot; pushedbkcolor=&quot;#FFCCE4F7&quot; disabledbkcolor=&quot;#FFCCCCCC&quot; bordersize=&quot;1&quot; bordercolor=&quot;#FFADADAD&quot; focusbordercolor=&quot;#FF0078D7&quot;" />
+	<VerticalLayout bkcolor="#FFF0F0F0" inset="10,10,10,0" >
+	<HorizontalLayout height="35">
+		<Button name="applybtn" height="30" padding="10,2,0,0" text="应用" />
+		<Button name="defaultbtn" height="30" padding="10,2,0,0" text="恢复默认值" />
+		<!-- <Button name="cancelbtn" height="30" padding="10,2,0,0" text="还原"/> -->
+	</HorizontalLayout>
+
+	<HorizontalLayout height="35">
+		<Button name="saveconfigbtn" height="30" padding="10,2,0,0" text="保存配置" />
+		<Button name="loadconfigbtn" height="30" padding="10,2,0,0" text="加载配置" />
+	</HorizontalLayout>
+	</VerticalLayout>
+</Window>
+

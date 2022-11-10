@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<AppConfig
+	DataFilePath="E:\Radar_Data\2021_05_27_13_26_19"
+	TopViewMode="1"
+	SmoothCount="0"
+	AngleStart="-160"
+	AngleStop="-20"
+	AngleStep="10"
+	SectorCount="20"
+	DrawObjectArea="0"
+	ObjectRadiatingCount="0" />

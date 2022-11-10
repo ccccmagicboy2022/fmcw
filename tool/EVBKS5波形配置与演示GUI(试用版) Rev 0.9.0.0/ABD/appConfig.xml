@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<AppConfig
+	BaudRate="256000"
+	DebugMode="1"
+	MotionGateMax="8"
+	MotionLessGateMax="8"
+	OffTime="5"
+	GateCount="14"
+	MotionSensing="20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, "
+	MotionLessSensing="25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, " />
