@@ -1,0 +1,5 @@
+MDK/RTE/
+MDK/ota/
+MDK/output/
+*.uvguix*
+*.uvoptx
