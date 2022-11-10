@@ -55,7 +55,7 @@ range_line = 4; % Range trigger line / m
 respiration_win_time = 5.0688; % Respiration detection data duration / s
 respiration_step_time = 2.5344; % Respiration detection data update duration / s
 noise_coefficient = 1; % Weighting coefficient of background noise
-noise_update_weight = 0.1; % Background noise update coefficient
+background_update_weight = 0.1; % Background noise update weight
 diff_energy_line = 0.5; % Background difference energy line
 background_line = 70; % Background energy line
 respiration_total_times = 4; % Number of respiratory observations
@@ -87,16 +87,17 @@ vbin = vel(2)- vel(1); % Velocity interval
 v_min_index = v_fft_num/ 2+ 1- fix(abs(v_min)/ vbin); % Min velocity index
 v_max_index = v_fft_num/ 2+ 1+ fix(v_max/ vbin); % Max velocity index
 
-%% Flags & Index & Space
-data_ready = false; % Data preparation flag
-respiration_judge_flag = false; % Respiration judge flag
-presence_flag = false; % Presence state flag
+%% Index & Space & Flags
 frame_index_local = 1; % Frame data acquisition counter
 frame_index = 1; % Frame data counter
 respiration_judge_index = 1; % Respiration judge counter
-background_data_matrix = zeros(r_max_index- r_min_index+ 1, v_max_index- v_min_index+ 1, ceil(background_win_time/ FmcwPara.FrameTime)); % Background data matrix
 respiration_data_matrix = zeros(FmcwPara.numSamplesPerChirp, respiration_process_num); % Respiration data matrix
+background_data_matrix = zeros(r_max_index- r_min_index+ 1, v_max_index- v_min_index+ 1); % Background data matrix
+tracking_data_matrix = zeros(r_max_index- r_min_index+ 1, v_max_index- v_min_index+ 1, tracking_win_time/ FmcwPara.FrameTime); % Tracking data matrix
 respiration_judge_matrix = zeros(r_max_index- r_min_index+ 1, respiration_total_times); % Respiration judge matrix
+data_ready = false; % Data preparation flag
+presence_flag = false; % Presence state flag
+respiration_judge_flag = false; % Respiration judge flag
 
 while(1)
 	while(1)
@@ -116,50 +117,66 @@ while(1)
 				frame_index = frame_index + 1;
 				continue
 			elseif frame_index == respiration_process_num- background_process_num+ 1
-				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
-				background_data_matrix(:, :, frame_index- (respiration_process_num- background_process_num)) = v_fft_tar_abs;
 				frame_data_mf = frame_data - mean(frame_data);
 				respiration_data_matrix(:, frame_index) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				background_data_matrix = background_data_matrix + v_fft_tar_abs/ ceil(background_win_time/ FmcwPara.FrameTime);
+				frame_index = frame_index + 1;
+				continue
+			elseif frame_index < respiration_process_num- tracking_process_num+ 1
+				frame_data_mf = frame_data - mean(frame_data);
+				respiration_data_matrix(:, frame_index) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				background_data_matrix = background_data_matrix + v_fft_tar_abs/ ceil(background_win_time/ FmcwPara.FrameTime);
+				frame_index = frame_index + 1;
+				continue
+			elseif frame_index == respiration_process_num- tracking_process_num+ 1
+				frame_data_mf = frame_data - mean(frame_data);
+				respiration_data_matrix(:, frame_index) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				background_data_matrix = background_data_matrix + v_fft_tar_abs/ ceil(background_win_time/ FmcwPara.FrameTime);
+				tracking_data_matrix(:, :, frame_index- (respiration_process_num- tracking_process_num)) = v_fft_tar_abs;
 				frame_index = frame_index + 1;
 				continue
 			elseif frame_index < respiration_process_num
-				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
-				background_data_matrix(:, :, frame_index- (respiration_process_num- background_process_num)) = v_fft_tar_abs;
 				frame_data_mf = frame_data - mean(frame_data);
 				respiration_data_matrix(:, frame_index) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				background_data_matrix = background_data_matrix + v_fft_tar_abs/ ceil(background_win_time/ FmcwPara.FrameTime);
+				tracking_data_matrix(:, :, frame_index- (respiration_process_num- tracking_process_num)) = v_fft_tar_abs;
 				frame_index = frame_index + 1;
 				continue
 			elseif frame_index == respiration_process_num
-				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
-				background_data_matrix(:, :, frame_index- (respiration_process_num- background_process_num)) = v_fft_tar_abs;
-				tracking_data_matrix = background_data_matrix(:, :, end- tracking_process_num+ 1: end);
 				frame_data_mf = frame_data - mean(frame_data);
 				respiration_data_matrix(:, frame_index) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				background_data_matrix = background_data_matrix + v_fft_tar_abs/ ceil(background_win_time/ FmcwPara.FrameTime);
+				tracking_data_matrix(:, :, frame_index- (respiration_process_num- tracking_process_num)) = v_fft_tar_abs;
 				frame_index = 1;
 				data_ready = true;
 			end
 		else
 			if frame_index < tracking_step_process_num
-				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
-				tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
-				tracking_data_matrix(:, :, end) = v_fft_tar_abs;
 				frame_data_mf = frame_data - mean(frame_data);
 				respiration_data_matrix(:, 1: end- 1) = respiration_data_matrix(:, 2: end);
 				respiration_data_matrix(:, end) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
+				tracking_data_matrix(:, :, end) = v_fft_tar_abs;
 				frame_index = frame_index + 1;
 				continue
 			elseif frame_index == tracking_step_process_num
-				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
-				tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
-				tracking_data_matrix(:, :, end) = v_fft_tar_abs;
 				frame_data_mf = frame_data - mean(frame_data);
 				respiration_data_matrix(:, 1: end- 1) = respiration_data_matrix(:, 2: end);
 				respiration_data_matrix(:, end) = sum(frame_data_mf, 2);
+				v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
+				tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
+				tracking_data_matrix(:, :, end) = v_fft_tar_abs;
 				frame_index = 1;
 			end
 		end
 		%% Trajectory tracking (incoherent accumulation)
-		[range, velocity, background_data_matrix] = trajectory_tracking(tracking_data_matrix, r_min_index, v_min_index, r, vel, mean(background_data_matrix, 3), noise_coefficient, noise_update_weight, diff_energy_line);
+		[range, velocity, background_data_matrix] = trajectory_tracking(tracking_data_matrix, r_min_index, v_min_index, r, vel, mean(background_data_matrix, 3), noise_coefficient, background_update_weight, diff_energy_line);
 		if range < range_line && range > 0
 			presence_flag = true;
 			break
@@ -178,35 +195,34 @@ while(1)
 		end
 		%% Data preparation
 		if frame_index < respiration_step_process_num
+			frame_data_mf = frame_data - mean(frame_data);
+			respiration_data_matrix(:, 1: end- 1) = respiration_data_matrix(:, 2: end);
+			respiration_data_matrix(:, end) = sum(frame_data_mf, 2);
 			v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
 			tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
 			tracking_data_matrix(:, :, end) = v_fft_tar_abs;
 			if mod(frame_index, tracking_step_process_num) == 0
-				[range, velocity, background_data_matrix] = trajectory_tracking(tracking_data_matrix, r_min_index, v_min_index, r, vel, mean(background_data_matrix, 3), noise_coefficient, noise_update_weight, diff_energy_line);
+				[range, velocity, background_data_matrix] = trajectory_tracking(tracking_data_matrix, r_min_index, v_min_index, r, vel, mean(background_data_matrix, 3), noise_coefficient, background_update_weight, diff_energy_line);
 			end
-			frame_data_mf = frame_data - mean(frame_data);
-			respiration_data_matrix(:, 1: end- 1) = respiration_data_matrix(:, 2: end);
-			respiration_data_matrix(:, end) = sum(frame_data_mf, 2);
 			frame_index = frame_index + 1;
 			continue
 		elseif frame_index == respiration_step_process_num
+			frame_data_mf = frame_data - mean(frame_data);
+			respiration_data_matrix(:, 1: end- 1) = respiration_data_matrix(:, 2: end);
+			respiration_data_matrix(:, end) = sum(frame_data_mf, 2);
 			v_fft_tar_abs = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
 			tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
 			tracking_data_matrix(:, :, end) = v_fft_tar_abs;
 			if mod(frame_index, tracking_step_process_num) == 0
-				[range, velocity, background_data_matrix] = trajectory_tracking(tracking_data_matrix, r_min_index, v_min_index, r, vel, mean(background_data_matrix, 3), noise_coefficient, noise_update_weight, diff_energy_line);
+				[range, velocity, background_data_matrix] = trajectory_tracking(tracking_data_matrix, r_min_index, v_min_index, r, vel, mean(background_data_matrix, 3), noise_coefficient, background_update_weight, diff_energy_line);
 			end
-			frame_data_mf = frame_data - mean(frame_data);
-			respiration_data_matrix(:, 1: end- 1) = respiration_data_matrix(:, 2: end);
-			respiration_data_matrix(:, end) = sum(frame_data_mf, 2);
 			frame_index = 1;
 		end
 		%% Respiration detection (coherent accumulation)
-		[respiration_locs, respiration_state] = respiration_detection(respiration_data_matrix, r_fft_num, respiration_fft_num, fs_respiration, r_min_index, r_max_index, background_line);
+		[respiration_locs, respiration_state] = respiration_detection(respiration_data_matrix, r_fft_num, r_min_index, r_max_index, respiration_fft_num, fs_respiration, background_line);
+		respiration_judge_matrix(:, respiration_judge_index) = 0;
 		if respiration_state
 			respiration_judge_matrix(respiration_locs, respiration_judge_index) = 1;
-		else
-			respiration_judge_matrix(:, respiration_judge_index) = 0;
 		end
 		respiration_judge_index = respiration_judge_index + 1;
 		if respiration_judge_index > respiration_total_times
