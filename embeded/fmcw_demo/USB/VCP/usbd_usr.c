@@ -21,6 +21,7 @@
 
 /* Includes ------------------------------------------------------------------ */
 #include "usbd_usr.h"
+#include "sys.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
 * @{
@@ -65,10 +66,8 @@ USBD_Usr_cb_TypeDef USR_cb = {
   USBD_USR_DeviceConfigured,
   USBD_USR_DeviceSuspended,
   USBD_USR_DeviceResumed,
-
-
   USBD_USR_DeviceConnected,
-  USBD_USR_DeviceDisconnected,
+  USBD_USR_DeviceDisconnected
 };
 
 /**
@@ -105,27 +104,15 @@ USBD_Usr_cb_TypeDef USR_cb = {
 */
 void USBD_USR_Init(void)
 {
-  /* Initialize LEDs */
-//  STM_EVAL_LEDInit(LED1);
-//  STM_EVAL_LEDInit(LED2);
-//  STM_EVAL_LEDInit(LED3);
-//  STM_EVAL_LEDInit(LED4);
-
-  /* Initialize the LCD */
-
-  //LCD_LOG_Init();
-
 #ifdef USE_USB_OTG_HS
-  #ifdef USE_EMBEDDED_PHY
-  LCD_LOG_SetHeader((uint8_t *) " USB OTG HS_IN_FS VCP Device");
-  #else
-  //LCD_LOG_SetHeader((uint8_t *) " USB OTG HS VCP Device");
-  #endif
+    #ifdef USE_EMBEDDED_PHY
+    CV_LOG("USB OTG HS_IN_FS VCP Device\r\n");
+    #else
+    CV_LOG("USB OTG HS VCP Device init\r\n");
+    #endif
 #else
-  LCD_LOG_SetHeader((uint8_t *) " USB OTG FS VCP Device");
+    CV_LOG("USB OTG FS VCP Device\r\n");
 #endif
-  //LCD_UsrLog("> USB device library started.\n");
-  //LCD_LOG_SetFooter((uint8_t *) "     USB Device Library V1.2.1");
 }
 
 /**
@@ -139,14 +126,13 @@ void USBD_USR_DeviceReset(uint8_t speed)
   switch (speed)
   {
   case USB_OTG_SPEED_HIGH:
-    //LCD_LOG_SetFooter((uint8_t *) "     USB Device Library V1.2.1 [HS]");
+    CV_LOG("USB Device Library V1.2.1 [HS]\r\n");
     break;
-
   case USB_OTG_SPEED_FULL:
-    //LCD_LOG_SetFooter((uint8_t *) "     USB Device Library V1.2.1 [FS]");
+    CV_LOG("USB Device Library V1.2.1 [FS]\r\n");
     break;
   default:
-    //LCD_LOG_SetFooter((uint8_t *) "     USB Device Library V1.2.1 [??]");
+    CV_LOG("USB Device Library V1.2.1 [N/A]\r\n");
     break;
   }
 }
@@ -160,7 +146,7 @@ void USBD_USR_DeviceReset(uint8_t speed)
 */
 void USBD_USR_DeviceConfigured(void)
 {
-  //LCD_UsrLog("> VCP Interface configured.\n");
+    CV_LOG("%s%sVCP Interface configured\r\n%s", RTT_CTRL_BG_BRIGHT_GREEN, RTT_CTRL_TEXT_BLACK, RTT_CTRL_RESET);
 }
 
 /**
@@ -171,8 +157,8 @@ void USBD_USR_DeviceConfigured(void)
 */
 void USBD_USR_DeviceSuspended(void)
 {
-  //LCD_UsrLog("> USB Device in Suspend Mode.\n");
   /* Users can do their application actions here for the USB-Reset */
+    CV_LOG("USB Device in Suspend Mode.\r\n");
 }
 
 
@@ -184,8 +170,8 @@ void USBD_USR_DeviceSuspended(void)
 */
 void USBD_USR_DeviceResumed(void)
 {
-  //LCD_UsrLog("> USB Device in Idle Mode.\n");
   /* Users can do their application actions here for the USB-Reset */
+    CV_LOG("USB Device in Idle Mode.\r\n");
 }
 
 
@@ -197,7 +183,7 @@ void USBD_USR_DeviceResumed(void)
 */
 void USBD_USR_DeviceConnected(void)
 {
-  //LCD_UsrLog("> USB Device Connected.\n");
+    CV_LOG("%s%sUSB Device Connected\r\n%s", RTT_CTRL_BG_BRIGHT_GREEN, RTT_CTRL_TEXT_BLACK, RTT_CTRL_RESET);
 }
 
 
@@ -209,7 +195,7 @@ void USBD_USR_DeviceConnected(void)
 */
 void USBD_USR_DeviceDisconnected(void)
 {
-  //LCD_UsrLog("> USB Device Disconnected.\n");
+    CV_LOG("USB Device Disconnected.\r\n");
 }
 
 /**

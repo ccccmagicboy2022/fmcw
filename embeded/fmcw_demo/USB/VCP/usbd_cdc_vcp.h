@@ -58,7 +58,8 @@ typedef struct
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void EVAL_COM_IRQHandler(void);
+uint32_t VCP_CheckDataSent(void);
+void VCP_SendData(USB_OTG_CORE_HANDLE * pdev, uint8_t * pbuf, uint32_t buf_len);
 
 #endif /* __USBD_CDC_VCP_H */
 
