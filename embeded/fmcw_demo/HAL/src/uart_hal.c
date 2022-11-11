@@ -5,5 +5,6 @@
 void uart_init(void)
 {
     usart1_init();
+    test_uart1();
 }
 

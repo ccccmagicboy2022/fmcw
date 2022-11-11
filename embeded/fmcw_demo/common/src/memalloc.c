@@ -7,9 +7,9 @@
 #define CHUNK_SIZE                           (1024)
 
 #ifdef O1_DATA_STREAM
-#define ALLOC_SIZE                           (52 * 1024)        //max at slow_detect
+#define ALLOC_SIZE                           (50 * 1024)        //max at slow_detect
 #else
-#define ALLOC_SIZE                           (80 * 1024)
+#define ALLOC_SIZE                           (100 * 1024)
 #endif
 
 #define CHUNK_NUM                            (ALLOC_SIZE / CHUNK_SIZE)

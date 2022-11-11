@@ -5,6 +5,7 @@
 #include "arm_math.h"
 #include "bluetooth.h"
 #include "ringbuffer.h"
+#include "memalloc.h"
 
 #include "mcu429_hal.h"
 #include "uart_hal.h"
@@ -14,6 +15,7 @@
 
 #include "SEGGER_RTT.h"
 #include "sysclk.h"
+#include "adc.h"
 
 #include "usb_core.h"
 #include "usb_conf.h"

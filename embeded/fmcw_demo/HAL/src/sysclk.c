@@ -27,7 +27,7 @@ void SysClkInit(void)
     RCC_AHB1PeriphClockCmd(RCC_APB2Periph_ADC3, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
     //spi3
-    
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
 }
 
 
@@ -37,8 +37,8 @@ void clk_test(void)
 
     RCC_GetClocksFreq(&RCC_ClockFreq);
 
-    CV_LOG("sysclk: %d\r\n", RCC_ClockFreq.SYSCLK_Frequency);
-    CV_LOG("hclk: %d\r\n", RCC_ClockFreq.HCLK_Frequency);
-    CV_LOG("pclk1: %d\r\n", RCC_ClockFreq.PCLK1_Frequency);
-    CV_LOG("pclk2: %d\r\n", RCC_ClockFreq.PCLK2_Frequency);
+    CV_LOG("sysclk: %d Hz\r\n", RCC_ClockFreq.SYSCLK_Frequency);
+    CV_LOG("hclk: %d Hz\r\n", RCC_ClockFreq.HCLK_Frequency);
+    CV_LOG("pclk1: %d Hz\r\n", RCC_ClockFreq.PCLK1_Frequency);
+    CV_LOG("pclk2: %d Hz\r\n", RCC_ClockFreq.PCLK2_Frequency);
 }

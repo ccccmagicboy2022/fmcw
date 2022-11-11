@@ -52,3 +52,9 @@ int fputc(int ch, FILE* f)
 
     return (ch);
 }
+
+void test_uart1(void)
+{
+    printf("uart1 test ok!\r\n");
+    CV_LOG("uart1: ok!\r\n");
+}

@@ -178,6 +178,7 @@ void USART1_IRQHandler(void)
     if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
     {
         temp = USART_ReceiveData(USART1);
+        CV_LOG("uart1 rev: 0x%02X\r\n", temp);
         uart_receive_input(temp);
     }
 }

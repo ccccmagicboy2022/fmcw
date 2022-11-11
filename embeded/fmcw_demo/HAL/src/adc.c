@@ -6,7 +6,8 @@
 #include "test_usart.h"
 #endif
 
-u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT];
+u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT] __attribute__ ((aligned(4)));
+u16 adc_data_buffer[SAMPLE_NUM_PER_CHIRP] __attribute__ ((aligned(4)));
 
 ring_buf_t ring_buffer = {
     .rd = 0,
@@ -16,82 +17,65 @@ ring_buf_t ring_buffer = {
     .buf = (u8 *)buffer,
 };
 
-u16 light_buffer[LIGHT_SAMPLE_NUM];
+u16 light_buffer[LIGHT_SAMPLE_NUM] __attribute__ ((aligned(4)));
 
-void init_pin(GPIO_Module* port, unsigned int pin)
+void init_pins(void)
 {
-    GPIO_InitType GPIO_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStructure;
+    
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+}
 
-    GPIO_InitStructure.Pin       = pin;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    GPIO_InitPeripheral(port, &GPIO_InitStructure);
+void TimerConfig(void)
+{
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
+    TIM_TimeBaseStructure.TIM_Period = 0xFF;          
+    TIM_TimeBaseStructure.TIM_Prescaler = 0;       
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;    
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+    
+    TIM_SelectOutputTrigger(TIM2, TIM_TRGOSource_Update);
+    TIM_Cmd(TIM2, ENABLE);
 }
 
 void AdcConfig(void)
 {
-    init_pin(GPIOC, GPIO_PIN_4);    //if
-    init_pin(GPIOA, GPIO_PIN_6);    //light res
+    init_pins();
     AdcInitConfig();
     DmaConfig();
 }
 
 void AdcInitConfig(void)
 {
-    ADC_InitType ADC_InitStructure;
-    ADC_InitTypeEx ADC_InitStructureEx;
-
-    ADC_InitStructure.WorkMode       = ADC_WORKMODE_INDEPENDENT;
-    ADC_InitStructure.MultiChEn      = DISABLE;
-    ADC_InitStructure.ContinueConvEn = DISABLE;
-    ADC_InitStructure.ExtTrigSelect  = ADC_EXT_TRIGCONV_T1_CC1;
-
-    ADC_InitStructure.DatAlign       = ADC_DAT_ALIGN_R;
-    ADC_InitStructure.ChsNumber      = 1;
-
-    ADC_Init(ADC1, &ADC_InitStructure);
-    ADC_InitStructureEx.ResBit = ADC_CTRL3_RES_12BIT;
-    ADC_InitEx(ADC1, &ADC_InitStructureEx);
-
-    ADC_ConfigRegularChannel(ADC1, ADC1_Channel_03_PA6, 1, ADC_SAMP_TIME_28CYCLES5);
-
-    ADC_EnableExternalTrigConv(ADC1, ENABLE);
-    ADC_EnableDMA(ADC1, ENABLE);
-    ADC_Enable(ADC1, ENABLE);
-
-    while(ADC_GetFlagStatusNew(ADC1,ADC_FLAG_RDY) == RESET)
-        ;
-    ADC_StartCalibration(ADC1);
-    while (ADC_GetCalibrationStatus(ADC1))
-        ;
-
-    ADC_EnableSoftwareStartConv(ADC1, ENABLE);
-
-////////////////////////////////////////////////////////////
-    ADC_InitStructure.WorkMode       = ADC_WORKMODE_INDEPENDENT;
-    ADC_InitStructure.MultiChEn      = DISABLE;
-    ADC_InitStructure.ContinueConvEn = DISABLE;
-    ADC_InitStructure.ExtTrigSelect  = ADC_EXT_TRIGCONV_T1_CC1;
-
-    ADC_InitStructure.DatAlign       = ADC_DAT_ALIGN_R;
-    ADC_InitStructure.ChsNumber      = 1;
-
-    ADC_Init(ADC2, &ADC_InitStructure);
-    ADC_InitStructureEx.ResBit = ADC_CTRL3_RES_12BIT;
-    ADC_InitEx(ADC2, &ADC_InitStructureEx);
-
-    ADC_ConfigRegularChannel(ADC2, ADC2_Channel_05_PC4, 1, ADC_SAMP_TIME_28CYCLES5);    //p195 28.5+1.5=30T=30*1/9=3.3us
-
-    ADC_EnableExternalTrigConv(ADC2, ENABLE);
-    ADC_EnableDMA(ADC2, ENABLE);    //use dma1 ch8
-    ADC_Enable(ADC2, ENABLE);
-
-    while(ADC_GetFlagStatusNew(ADC2,ADC_FLAG_RDY) == RESET)
-        ;
-    ADC_StartCalibration(ADC2);
-    while (ADC_GetCalibrationStatus(ADC2))
-        ;
-
-    ADC_EnableSoftwareStartConv(ADC2, ENABLE);
+    ADC_CommonInitTypeDef ADC_CommonInitStructure;
+    
+    ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
+    ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
+    ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
+    ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
+    ADC_CommonInit(&ADC_CommonInitStructure);
+    
+    ADC_InitTypeDef ADC_InitStructure;    
+    
+    ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
+    ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+    ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+    ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Rising;
+    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_CC2;
+    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+    ADC_InitStructure.ADC_NbrOfConversion = 1;
+    ADC_Init(ADC3, &ADC_InitStructure);
+    
+    ADC_RegularChannelConfig(ADC3, ADC_Channel_8, 1, ADC_SampleTime_3Cycles);    
+    ADC_DMARequestAfterLastTransferCmd(ADC3, ENABLE);
+    ADC_DMACmd(ADC3, ENABLE);
+    ADC_Cmd(ADC3, ENABLE);
 }
 
 /**
@@ -113,58 +97,36 @@ void DmaConfig(void)
 
 void DmaInitConfig(void)
 {
-    DMA_InitType DMA_InitStructure;
-    NVIC_InitType NVIC_InitStructure;
+    DMA_InitTypeDef       DMA_InitStructure;
+    
+    DMA_InitStructure.DMA_Channel = DMA_Channel_2;  
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)ADC3_DR_ADDRESS;
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(&adc_data_buffer[0]);
+    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+    DMA_InitStructure.DMA_BufferSize = ELEMENT_SIZE / sizeof(u16);
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;         
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
+    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+ 
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
-    DMA_DeInit(DMA1_CH1);
-    DMA_InitStructure.PeriphAddr     = (uint32_t)&ADC1->DAT;
-    DMA_InitStructure.MemAddr        = (uint32_t)(&light_buffer[0]);
-    DMA_InitStructure.Direction      = DMA_DIR_PERIPH_SRC;
-    DMA_InitStructure.BufSize        = LIGHT_BLK_COUNT;
-    DMA_InitStructure.PeriphInc      = DMA_PERIPH_INC_DISABLE;
-    DMA_InitStructure.DMA_MemoryInc  = DMA_MEM_INC_DISABLE;
-    DMA_InitStructure.PeriphDataSize = DMA_PERIPH_DATA_SIZE_HALFWORD;
-    DMA_InitStructure.MemDataSize    = DMA_MemoryDataSize_HalfWord;
-    DMA_InitStructure.CircularMode   = DMA_MODE_CIRCULAR;
-    DMA_InitStructure.Priority       = DMA_PRIORITY_LOW;
-    DMA_InitStructure.Mem2Mem        = DMA_M2M_DISABLE;
+    NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Enable the DMA Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel                   = DMA1_Channel1_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    DMA_Init(DMA1_CH1, &DMA_InitStructure);
-    DMA_ConfigInt(DMA1_CH1, DMA_INT_TXC, ENABLE);   //p178
-    DMA_EnableChannel(DMA1_CH1, ENABLE);    //for adc1
-
-    ///////////////////////////////////////////////////////
-
-    DMA_DeInit(DMA1_CH8);
-    DMA_InitStructure.PeriphAddr     = (uint32_t)&ADC2->DAT;
-    DMA_InitStructure.MemAddr        = (uint32_t)(&buffer[0]);
-    DMA_InitStructure.Direction      = DMA_DIR_PERIPH_SRC;
-    DMA_InitStructure.BufSize        = ELEMENT_SIZE / sizeof(u16);
-    DMA_InitStructure.PeriphInc      = DMA_PERIPH_INC_DISABLE;
-    DMA_InitStructure.DMA_MemoryInc  = DMA_MEM_INC_ENABLE;
-    DMA_InitStructure.PeriphDataSize = DMA_PERIPH_DATA_SIZE_HALFWORD;
-    DMA_InitStructure.MemDataSize    = DMA_MemoryDataSize_HalfWord;
-    DMA_InitStructure.CircularMode   = DMA_MODE_CIRCULAR;
-    DMA_InitStructure.Priority       = DMA_PRIORITY_VERY_HIGH;
-    DMA_InitStructure.Mem2Mem        = DMA_M2M_DISABLE;
-
-    /* Enable the DMA Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel                   = DMA1_Channel8_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    DMA_Init(DMA1_CH8, &DMA_InitStructure);
-    DMA_ConfigInt(DMA1_CH8, DMA_INT_TXC, ENABLE);   //p178
-    DMA_EnableChannel(DMA1_CH8, ENABLE);            //for adc2
+    DMA_Init(DMA2_Stream0, &DMA_InitStructure);
+    DMA_Cmd(DMA2_Stream0, ENABLE);
 }
 
 int get_sample_data(u8 *buf)
