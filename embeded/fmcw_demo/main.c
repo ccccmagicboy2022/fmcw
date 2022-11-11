@@ -3,7 +3,7 @@
 s16 data_buf[512];
 __attribute__ ((weak)) void detect_presense(void);
 extern __ALIGN_BEGIN USB_OTG_CORE_HANDLE USB_OTG_dev __ALIGN_END;
-uint8_t Txbuffer[64];
+uint8_t Txbuffer[1024];
 
 int32_t main(void)
 {
@@ -26,8 +26,7 @@ int32_t main(void)
         }
         USB_OTG_BSP_mDelay(1);
         
-        while (VCP_CheckDataSent() == 1);
-        VCP_SendData(&USB_OTG_dev, Txbuffer, 1);
+        VCP_SendData(&USB_OTG_dev, Txbuffer, 16);
 	}
 }
 

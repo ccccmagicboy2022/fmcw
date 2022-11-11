@@ -168,21 +168,22 @@ static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t * Buf, uint32_t Len)
   */
 uint16_t VCP_DataTx(void)
 {
-  data_sent = 1;
-  return USBD_OK;
+    data_sent = 1;
+    return USBD_OK;
 }
 
 uint32_t VCP_CheckDataSent(void)
 {
-  if (data_sent)
-    return 1;
-  return 0;
+    if (data_sent)
+        return 1;
+    return 0;
 }
 
 void VCP_SendData(USB_OTG_CORE_HANDLE * pdev, uint8_t * pbuf, uint32_t buf_len)
 {
-  data_sent = 0;
-  DCD_EP_Tx(pdev, CDC_IN_EP, pbuf, buf_len);
+    while (VCP_CheckDataSent() == 1);
+    data_sent = 0;
+    DCD_EP_Tx(pdev, CDC_IN_EP, pbuf, buf_len);
 }
 
 /**
