@@ -134,7 +134,6 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE * pdev)
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB |
                          RCC_AHB1Periph_GPIOC, ENABLE);
 
-
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_OTG2_HS);  /* D0 */
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_OTG2_HS);  /* CLK */
   GPIO_PinAFConfig(GPIOB, GPIO_PinSource0, GPIO_AF_OTG2_HS);  /* D1 */

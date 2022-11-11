@@ -3,3 +3,4 @@ MDK/ota/
 MDK/output/
 *.uvguix*
 *.uvoptx
+MDK/JLinkLog.txt
