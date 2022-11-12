@@ -149,11 +149,11 @@
    /* #define USB_OTG_HS_LOW_PWR_MGMT_SUPPORT */
  #endif
   //#define USB_OTG_HS_INTERNAL_DMA_ENABLED
-                                               /* Be aware that enabling DMA mode will result in data being sent only by
-                                                  multiple of 4 packet sizes. This is due to the fact that USB DMA does
-                                                  not allow sending data from non word-aligned addresses.
-                                                  For this specific application, it is advised to not enable this option
-                                                  unless required. */
+/* Be aware that enabling DMA mode will result in data being sent only by
+   multiple of 4 packet sizes. This is due to the fact that USB DMA does
+   not allow sending data from non word-aligned addresses.
+   For this specific application, it is advised to not enable this option
+   unless required. */
   #define USB_OTG_HS_DEDICATED_EP1_ENABLED
 #endif
 

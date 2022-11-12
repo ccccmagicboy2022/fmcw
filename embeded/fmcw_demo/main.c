@@ -26,7 +26,7 @@ int32_t main(void)
         }
         USB_OTG_BSP_mDelay(1);
         
-        VCP_SendData(&USB_OTG_dev, Txbuffer, 16);
+        VCP_SendData(&USB_OTG_dev, Txbuffer, 32);
 	}
 }
 
