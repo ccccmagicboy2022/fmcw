@@ -4,3 +4,6 @@ MDK/output/
 *.uvguix*
 *.uvoptx
 MDK/JLinkLog.txt
+burnhex*
+JLinkARM.dll
+log.txt
