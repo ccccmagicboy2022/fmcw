@@ -28,6 +28,7 @@
 #include "sys.h"
 
 __IO uint32_t data_sent;
+extern __ALIGN_BEGIN USB_OTG_CORE_HANDLE USB_OTG_dev __ALIGN_END;
 
 /* Private typedef ----------------------------------------------------------- */
 /* Private define ------------------------------------------------------------ */
@@ -179,11 +180,11 @@ uint32_t VCP_CheckDataSent(void)
     return 0;
 }
 
-void VCP_SendData(USB_OTG_CORE_HANDLE * pdev, uint8_t * pbuf, uint32_t buf_len)
+void USB_SendData(uint8_t * pbuf, uint32_t buf_len)
 {
     while (VCP_CheckDataSent() == 1);
     data_sent = 0;
-    DCD_EP_Tx(pdev, CDC_IN_EP, pbuf, buf_len);
+    DCD_EP_Tx(&USB_OTG_dev, CDC_IN_EP, pbuf, buf_len);
 }
 
 /**

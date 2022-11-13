@@ -7,10 +7,11 @@ void radar_init(void)
 {
     input_capture_init();
     dac_init();
+    spi4_cs_init();
     spi4_init();
     //write regs
-    //spi4_write_reg32(0x000007f8);
-    //spi4_write_reg32(0x001fc00a);
+    spi4_write_reg32(0x000007f8);
+    spi4_write_reg32(0x001fc00a);
     adc_init();
 }
 
@@ -114,11 +115,25 @@ void dac_init(void)
     
 }
 
+void spi4_cs_init(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+    GPIO_Init(GPIOE, &GPIO_InitStructure);
+    
+    SPI4_CS_HIGH;
+}
+
 void spi4_init(void)
 {
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource2, GPIO_AF_SPI4);
-    GPIO_PinAFConfig(GPIOE, GPIO_PinSource4, GPIO_AF_SPI4);
-    GPIO_PinAFConfig(GPIOE, GPIO_PinSource5, GPIO_AF_SPI4);
+//    GPIO_PinAFConfig(GPIOE, GPIO_PinSource4, GPIO_AF_SPI4);
+//    GPIO_PinAFConfig(GPIOE, GPIO_PinSource5, GPIO_AF_SPI4);
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource6, GPIO_AF_SPI4);
 
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -131,23 +146,23 @@ void spi4_init(void)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4;
-    GPIO_Init(GPIOE, &GPIO_InitStructure);
+//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+//    GPIO_Init(GPIOE, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_5;
-    GPIO_Init(GPIOE, &GPIO_InitStructure);
+//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+//    GPIO_Init(GPIOE, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
 
     SPI_InitTypeDef  SPI_InitStructure;
 
     SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-    SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
+    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
     SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-    SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
+    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
     SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_Init(SPI4, &SPI_InitStructure);
@@ -172,9 +187,12 @@ void spi4_write_reg32(uint32_t word)
     send_buf[2] = (word >> 8) & 0xff;
     send_buf[3] = (word) & 0xff;
 
+    SPI4_CS_LOW;
     for(i=0;i<4;i++)
     {
         spi4_write_byte(send_buf[i]);
     }
+    USB_OTG_BSP_mDelay(1);
+    SPI4_CS_HIGH;
 }
 
