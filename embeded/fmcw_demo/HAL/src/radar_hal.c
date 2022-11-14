@@ -2,16 +2,22 @@
 #include "sys.h"
 
 uint16_t vt_tab[DAC_ALL_RESOLUTION] = {0};
+uint16_t vtune = 0x800;
 
-void radar_init(void)
+void radar_spi_init(void)
 {
-    input_capture_init();
-    dac_init();
     spi4_cs_init();
     spi4_init();
     //write regs
-    spi4_write_reg32(0x000007f8);
-    spi4_write_reg32(0x001fc00a);
+    spi4_write_reg32(0x000007F8);//reg0
+    spi4_write_reg32(0x001FC00A);//reg2
+}
+
+void radar_init(void)
+{
+    radar_spi_init();
+    input_capture_init();
+    dac_init();
     adc_init();
 }
 
@@ -59,7 +65,7 @@ void input_capture_init(void)
     TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE);
 }
 
-void dac_init(void)
+void dac_gpio_config(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -68,7 +74,26 @@ void dac_init(void)
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;;
 
     GPIO_Init(GPIOA, &GPIO_InitStructure);
+}
+
+void dac_first_init(void)
+{
+    DAC_InitTypeDef  DAC_InitStructure;
     
+    DAC_InitStructure.DAC_Trigger = DAC_Trigger_None;
+    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+    DAC_Init(DAC_Channel_1, &DAC_InitStructure);
+    
+    DAC_Cmd(DAC_Channel_1, ENABLE);
+}
+
+void dac_first_deinit(void)
+{
+    DAC_Cmd(DAC_Channel_1, DISABLE);
+}
+
+void dac_secend_init(void)
+{
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
@@ -112,7 +137,18 @@ void dac_init(void)
     
     DAC_Cmd(DAC_Channel_1, ENABLE);
     DAC_DMACmd(DAC_Channel_1, ENABLE);
-    
+}
+
+void dac_init(void)
+{
+    dac_gpio_config();
+    dac_first_init();
+    dac_first_set_value(vtune);
+}
+
+void dac_first_set_value(uint32_t data)
+{
+    DAC_SetChannel1Data(DAC_Align_12b_R, data);
 }
 
 void spi4_cs_init(void)
@@ -132,8 +168,6 @@ void spi4_cs_init(void)
 void spi4_init(void)
 {
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource2, GPIO_AF_SPI4);
-//    GPIO_PinAFConfig(GPIOE, GPIO_PinSource4, GPIO_AF_SPI4);
-//    GPIO_PinAFConfig(GPIOE, GPIO_PinSource5, GPIO_AF_SPI4);
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource6, GPIO_AF_SPI4);
 
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -145,12 +179,6 @@ void spi4_init(void)
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-//    GPIO_Init(GPIOE, &GPIO_InitStructure);
-
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-//    GPIO_Init(GPIOE, &GPIO_InitStructure);
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
@@ -172,9 +200,9 @@ void spi4_init(void)
 
 void spi4_write_byte(uint8_t val)
 {
-    SPI_I2S_SendData(SPI4, val);
     while (SPI_GetFlagStatus(SPI4, SPI_FLAG_TXE) == RESET)
         ;
+    SPI_I2S_SendData(SPI4, val);
 }
 
 void spi4_write_reg32(uint32_t word)
@@ -192,7 +220,7 @@ void spi4_write_reg32(uint32_t word)
     {
         spi4_write_byte(send_buf[i]);
     }
-    USB_OTG_BSP_mDelay(1);
+    USB_OTG_BSP_uDelay(20);
     SPI4_CS_HIGH;
 }
 

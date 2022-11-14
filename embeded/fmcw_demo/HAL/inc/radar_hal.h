@@ -16,5 +16,7 @@ void adc_init(void);
 void input_capture_init(void);
 void dac_init(void);
 void spi4_cs_init(void);
+void dac_first_set_value(uint32_t data);
+void radar_spi_init(void);
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_
