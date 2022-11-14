@@ -30,9 +30,11 @@
 
 ///////////////////////////
 #define CPU_FREQ 180    // MHz
+
 #define FREQ_MIN 24025  // MHz
 #define FREQ_MAX 24225  // MHz
 #define FREQ_OUT_DIV         (65536 * 16)
+
 #define SAMPLE_NUM_PER_CHIRP 128
 #define DAC_WORK_RESOLUTION  128
 #define CHIRP_WORK_TIME      200  // us

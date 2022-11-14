@@ -2,7 +2,23 @@
 #include "sys.h"
 
 uint16_t vt_tab[DAC_ALL_RESOLUTION] = {0};
-uint16_t vtune = 0x800;
+float target_divout2_start_freq_at_khz = 0.0f;
+float target_divout2_diff_freq_at_khz = 0.0f;
+float target_divout2_freqs_at_khz[DAC_WORK_RESOLUTION + 1];
+
+void frequency_calibration(void)
+{
+    target_divout2_start_freq_at_khz = FREQ_MIN * 1000.0f / FREQ_OUT_DIV;
+    target_divout2_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
+        
+    CV_LOG("target_divout2_start_freq_at_khz: %f KHz\r\n", target_divout2_start_freq_at_khz);
+    CV_LOG("target_divout2_diff_freq_at_khz: %f KHz\r\n", target_divout2_diff_freq_at_khz);
+    
+    while (1)
+    {
+        //
+    }
+}
 
 void radar_spi_init(void)
 {
@@ -28,7 +44,7 @@ void adc_init(void)
     TimerConfig();
 }
 
-void input_capture_init(void)
+void input_capture_gpio_config(void)
 {
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource9, GPIO_AF_TIM1);
     
@@ -41,7 +57,10 @@ void input_capture_init(void)
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-    
+}
+
+void input_capture_nvic_config(void)
+{
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -51,6 +70,18 @@ void input_capture_init(void)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
+}
+
+void input_capture_timer_config(void)
+{
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+    TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
+    TIM_TimeBaseStructure.TIM_Prescaler = 0x0;
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
     
     TIM_ICInitTypeDef  TIM_ICInitStructure;
     
@@ -58,11 +89,18 @@ void input_capture_init(void)
     TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV8;
-    TIM_ICInitStructure.TIM_ICFilter = 0x0;
+    TIM_ICInitStructure.TIM_ICFilter = 0x00;
     
     TIM_ICInit(TIM1, &TIM_ICInitStructure);
+    TIM_ITConfig(TIM1, TIM_IT_Update | TIM_IT_CC1, ENABLE);
     TIM_Cmd(TIM1, ENABLE);
-    TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE);
+}
+
+void input_capture_init(void)
+{   
+    input_capture_gpio_config();
+    input_capture_nvic_config();
+    input_capture_timer_config();
 }
 
 void dac_gpio_config(void)
@@ -143,12 +181,21 @@ void dac_init(void)
 {
     dac_gpio_config();
     dac_first_init();
-    dac_first_set_value(vtune);
+    dac_set_vol(1.0f);
 }
 
 void dac_first_set_value(uint32_t data)
 {
     DAC_SetChannel1Data(DAC_Align_12b_R, data);
+}
+
+void dac_set_vol(float vol)
+{
+    uint32_t dac_raw = 0;
+    
+    dac_raw = vol * 4095.0f / 3.3f + 0.5f;
+    
+    DAC_SetChannel1Data(DAC_Align_12b_R, dac_raw);
 }
 
 void spi4_cs_init(void)

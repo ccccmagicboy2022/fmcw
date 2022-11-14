@@ -18,5 +18,7 @@ void dac_init(void);
 void spi4_cs_init(void);
 void dac_first_set_value(uint32_t data);
 void radar_spi_init(void);
+void dac_set_vol(float vol);
+void frequency_calibration(void);
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_

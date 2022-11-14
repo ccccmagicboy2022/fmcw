@@ -102,6 +102,9 @@ void     USBD_USR_HS_DeviceResumed(void);
 void     USBD_USR_HS_DeviceConnected(void);
 void     USBD_USR_HS_DeviceDisconnected(void);  
 
+uint8_t get_usb_ok(void);
+void wait_usb_init_ok(void);
+
 /**
   * @}
   */ 

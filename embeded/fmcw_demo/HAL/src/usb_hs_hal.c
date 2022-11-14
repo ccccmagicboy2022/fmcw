@@ -13,6 +13,8 @@ void usb_hs_init(void)
     &USR_desc, 
     &USBD_CDC_cb, 
     &USR_cb);
+    
+    wait_usb_init_ok();
 }
 
 void usb_hs_phy_gpio_init(void)

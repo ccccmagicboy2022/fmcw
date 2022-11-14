@@ -23,6 +23,20 @@
 #include "usbd_usr.h"
 #include "sys.h"
 
+uint8_t usb_ok_flag;
+
+void wait_usb_init_ok(void)
+{
+    while(get_usb_ok() == 0)
+    {
+        //pass
+    }
+}
+
+uint8_t get_usb_ok(void)
+{
+    return usb_ok_flag;
+}
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
 * @{
 */
@@ -149,6 +163,7 @@ void USBD_USR_DeviceReset(uint8_t speed)
 void USBD_USR_DeviceConfigured(void)
 {
     CV_LOG("%s%sVCP Interface configured\r\n%s", RTT_CTRL_BG_BRIGHT_GREEN, RTT_CTRL_TEXT_BLACK, RTT_CTRL_RESET);
+    usb_ok_flag = 1;
 }
 
 /**
