@@ -2,21 +2,29 @@
 #include "sys.h"
 
 uint16_t vt_tab[DAC_ALL_RESOLUTION] = {0};
-float target_divout2_start_freq_at_khz = 0.0f;
-float target_divout2_diff_freq_at_khz = 0.0f;
-float target_divout2_freqs_at_khz[DAC_WORK_RESOLUTION + 1];
+float target_divout2_start_freq_at_hz = 0.0f;
+float target_divout2_diff_freq_at_hz = 0.0f;
+float target_divout2_freqs_at_hz[DAC_WORK_RESOLUTION + 1];
+
+extern float uwTIM1Freq;
+
+float get_cap_divout2_at_hz(void)
+{
+    return uwTIM1Freq;
+}
 
 void frequency_calibration(void)
 {
-    target_divout2_start_freq_at_khz = FREQ_MIN * 1000.0f / FREQ_OUT_DIV;
-    target_divout2_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
+    target_divout2_start_freq_at_hz = FREQ_MIN * 1000000.0f / FREQ_OUT_DIV;
+    target_divout2_diff_freq_at_hz = ((float)(FREQ_MAX - FREQ_MIN) * 1000000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
         
-    CV_LOG("target_divout2_start_freq_at_khz: %f KHz\r\n", target_divout2_start_freq_at_khz);
-    CV_LOG("target_divout2_diff_freq_at_khz: %f KHz\r\n", target_divout2_diff_freq_at_khz);
+    CV_LOG("target_divout2_start_freq_at_hz: %f Hz\r\n", target_divout2_start_freq_at_hz);
+    CV_LOG("target_divout2_diff_freq_at_hz: %f Hz\r\n", target_divout2_diff_freq_at_hz);
     
     while (1)
     {
-        //
+        USB_OTG_BSP_mDelay(100);
+        CV_LOG("tim1: %f Hz\r\n", get_cap_divout2_at_hz());
     }
 }
 
@@ -73,16 +81,7 @@ void input_capture_nvic_config(void)
 }
 
 void input_capture_timer_config(void)
-{
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    
-    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-    TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-    TIM_TimeBaseStructure.TIM_Prescaler = 0x0;
-    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
-    
+{   
     TIM_ICInitTypeDef  TIM_ICInitStructure;
     
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
@@ -92,7 +91,7 @@ void input_capture_timer_config(void)
     TIM_ICInitStructure.TIM_ICFilter = 0x00;
     
     TIM_ICInit(TIM1, &TIM_ICInitStructure);
-    TIM_ITConfig(TIM1, TIM_IT_Update | TIM_IT_CC1, ENABLE);
+    TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE);
     TIM_Cmd(TIM1, ENABLE);
 }
 

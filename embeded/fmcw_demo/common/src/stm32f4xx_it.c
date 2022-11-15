@@ -197,13 +197,13 @@ void TIM1_CC_IRQHandler(void)
         if(uhCaptureNumber == 0)
         {
             /* Get the Input Capture value */
-            uhIC3ReadValue1 = TIM_GetCapture2(TIM1);
+            uhIC3ReadValue1 = TIM_GetCapture1(TIM1);
             uhCaptureNumber = 1;
         }
         else if(uhCaptureNumber == 1)
         {
             /* Get the Input Capture value */
-            uhIC3ReadValue2 = TIM_GetCapture2(TIM1);
+            uhIC3ReadValue2 = TIM_GetCapture1(TIM1);
 
             /* Capture computation */
             if (uhIC3ReadValue2 > uhIC3ReadValue1)
@@ -219,7 +219,7 @@ void TIM1_CC_IRQHandler(void)
                 uwCapture = 0;
             }
             /* Frequency computation */
-            uwTIM1Freq = SystemCoreClock / uwCapture;
+            uwTIM1Freq = (float)(SystemCoreClock * 8.0f / uwCapture);
             uhCaptureNumber = 0;
         }
     }
