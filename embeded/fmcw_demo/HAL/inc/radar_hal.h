@@ -16,9 +16,12 @@ void adc_init(void);
 void input_capture_init(void);
 void dac_init(void);
 void spi4_cs_init(void);
-void dac_first_set_value(uint32_t data);
+void dac_set_value(uint16_t data);
+uint16_t dac_get_value(void);
 void radar_spi_init(void);
 void dac_set_vol(float vol);
 void frequency_calibration(void);
+uint8_t cal_once(float target_khz, uint16_t * dac_raw);
+uint8_t pidExecu(float target_khz, float cap_khz);
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_

@@ -32,6 +32,11 @@
 #define FREQ_MIN 24025  // MHz
 #define FREQ_MAX 24225  // MHz
 #define FREQ_OUT_DIV         (65536 * 16)
+#define FREQ_CAP_MEAN_NUM   500
+#define ERR_LIMIT           (0.0014f)
+#define KP                  (-1.56f)
+#define KI                  (-0.03f)
+#define KD                  (0.01f)
 
 #define SAMPLE_NUM_PER_CHIRP 128
 #define DAC_WORK_RESOLUTION  128
@@ -41,6 +46,10 @@
 #define DAC_IDEL_RESOLUTION  (DAC_WORK_RESOLUTION * CHIRP_IDLE_TIME / CHIRP_WORK_TIME)
 #define DAC_ALL_RESOLUTION   (DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION)
 ///////////////////////////
+typedef struct{
+    arm_pid_instance_f32  S;
+    float                 out;
+}PidCtrlTypedef;
 
 #define CV_LOG(fmt, ...) \
 do \

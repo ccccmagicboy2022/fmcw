@@ -2,30 +2,104 @@
 #include "sys.h"
 
 uint16_t vt_tab[DAC_ALL_RESOLUTION] = {0};
-float target_divout2_start_freq_at_hz = 0.0f;
-float target_divout2_diff_freq_at_hz = 0.0f;
-float target_divout2_freqs_at_hz[DAC_WORK_RESOLUTION + 1];
-
+float cap_freq_mean_a[FREQ_CAP_MEAN_NUM];
 extern uint16_t uhICReadValue;
+PidCtrlTypedef pidCtrl;
 
-float get_cap_divout2_at_hz(void)
+float get_cap_divout2_at_khz(void)
 {
-    return (float)(SystemCoreClock / (uhICReadValue)) * 8.0f;
+    return (float)(SystemCoreClock / (uhICReadValue)) * 8.0f / 1000.0f;
+}
+
+double get_rf_freq_at_khz(void)
+{
+    return get_cap_divout2_at_khz()*(double)(FREQ_OUT_DIV);
+}
+
+void pidInit()
+{
+    pidCtrl.S.Kp = KP;
+    pidCtrl.S.Ki = KI;
+    pidCtrl.S.Kd = KD;
+    arm_pid_init_f32(&pidCtrl.S, 1);
+
+    pidCtrl.out = 0.0f;
+}
+
+uint8_t cal_once(float target_khz, uint16_t * dac_raw)
+{
+    float cap_freq_mean = 0.0f;
+    int16_t ii = 0;
+    uint8_t res = 0;
+    
+    while (1)
+    {
+        cap_freq_mean_a[((ii++)%FREQ_CAP_MEAN_NUM)] = get_cap_divout2_at_khz();
+        arm_mean_f32(cap_freq_mean_a, FREQ_CAP_MEAN_NUM, &cap_freq_mean);
+        if (ii%FREQ_CAP_MEAN_NUM == 0)
+        {
+            //printf("target: %.3f, cap: %.3f KHz, dac: %d\r\n", target_khz, cap_freq_mean, dac_get_value());
+            res = pidExecu(target_khz, cap_freq_mean);
+            if (res)
+            {
+                break;
+            }
+        }
+    }
+    
+    *dac_raw = dac_get_value();
+    
+    return 1;
+}
+
+uint8_t pidExecu(float target_khz, float cap_khz)
+{
+    float pidErr;
+    static uint16_t ok_timer = 0;
+
+    pidErr = target_khz - cap_khz;	
+
+	if(fabs(pidErr) > ERR_LIMIT)
+    {
+    	pidCtrl.out = arm_pid_f32(&pidCtrl.S, pidErr);
+        dac_set_vol(pidCtrl.out);
+        ok_timer = 0;
+	}
+    else
+    {
+        ok_timer++;
+    }
+    
+    if (ok_timer > 20)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void frequency_calibration(void)
 {
-    target_divout2_start_freq_at_hz = FREQ_MIN * 1000000.0f / FREQ_OUT_DIV;
-    target_divout2_diff_freq_at_hz = ((float)(FREQ_MAX - FREQ_MIN) * 1000000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
-        
-    CV_LOG("target_divout2_start_freq_at_hz: %f Hz\r\n", target_divout2_start_freq_at_hz);
-    CV_LOG("target_divout2_diff_freq_at_hz: %f Hz\r\n", target_divout2_diff_freq_at_hz);
+    float target_divout2_start_freq_at_khz = 0.0f;
+    float target_divout2_diff_freq_at_khz = 0.0f;
+    uint16_t dac_raw = 0;
     
-    while (1)
+    target_divout2_start_freq_at_khz = FREQ_MIN * 1000.0f / FREQ_OUT_DIV;
+    target_divout2_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
+        
+    printf("target_divout2_start_freq_at_hz: %.3f KHz\r\n", target_divout2_start_freq_at_khz);
+    printf("target_divout2_diff_freq_at_hz: %.6f KHz\r\n", target_divout2_diff_freq_at_khz);
+    
+    pidInit();
+    
+    for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
     {
-        USB_OTG_BSP_mDelay(100);
-        CV_LOG("tim1: %f Hz\r\n", get_cap_divout2_at_hz());
+        cal_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, &dac_raw);
+        printf("i: %d, dac: %d\r\n", i, dac_raw);
     }
+    
 }
 
 void radar_spi_init(void)
@@ -194,12 +268,17 @@ void dac_init(void)
 {
     dac_gpio_config();
     dac_first_init();
-    dac_set_vol(1.0f);
+    dac_set_vol(1.5f);
 }
 
-void dac_first_set_value(uint32_t data)
+void dac_set_value(uint16_t data)
 {
     DAC_SetChannel1Data(DAC_Align_12b_R, data);
+}
+
+uint16_t dac_get_value(void)
+{
+    return DAC_GetDataOutputValue(DAC_Channel_1);
 }
 
 void dac_set_vol(float vol)
