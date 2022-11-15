@@ -10,7 +10,7 @@ extern uint16_t uhICReadValue;
 
 float get_cap_divout2_at_hz(void)
 {
-    return (float)(1000000.0f / (uhICReadValue * 0.05)) * 8.0f;
+    return (float)(SystemCoreClock / (uhICReadValue)) * 8.0f;
 }
 
 void frequency_calibration(void)
@@ -90,8 +90,8 @@ void input_capture_timer_config(void)
 {   
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
     
-    TIM_TimeBaseStructure.TIM_Period = 8000 - 1;
-    TIM_TimeBaseStructure.TIM_Prescaler = 9 - 1;
+    TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
+    TIM_TimeBaseStructure.TIM_Prescaler = 0;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
@@ -102,7 +102,7 @@ void input_capture_timer_config(void)
     TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV8;
-    TIM_ICInitStructure.TIM_ICFilter = 0x00;
+    TIM_ICInitStructure.TIM_ICFilter = 0;
     
     TIM_ICInit(TIM1, &TIM_ICInitStructure);
     TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE);

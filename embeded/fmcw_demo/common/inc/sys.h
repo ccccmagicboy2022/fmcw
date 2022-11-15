@@ -29,8 +29,6 @@
 #define SEGGER_RTT_IN_RAM   1
 
 ///////////////////////////
-#define CPU_FREQ_MHZ 180    // MHz
-
 #define FREQ_MIN 24025  // MHz
 #define FREQ_MAX 24225  // MHz
 #define FREQ_OUT_DIV         (65536 * 16)
