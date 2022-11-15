@@ -6,11 +6,11 @@ float target_divout2_start_freq_at_hz = 0.0f;
 float target_divout2_diff_freq_at_hz = 0.0f;
 float target_divout2_freqs_at_hz[DAC_WORK_RESOLUTION + 1];
 
-extern float uwTIM1Freq;
+extern uint16_t uhICReadValue;
 
 float get_cap_divout2_at_hz(void)
 {
-    return uwTIM1Freq;
+    return (float)(1000000.0f / (uhICReadValue * 0.05)) * 8.0f;
 }
 
 void frequency_calibration(void)
@@ -74,7 +74,13 @@ void input_capture_nvic_config(void)
     NVIC_InitTypeDef NVIC_InitStructure;
 
     NVIC_InitStructure.NVIC_IRQChannel = TIM1_CC_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_TIM10_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
@@ -82,6 +88,14 @@ void input_capture_nvic_config(void)
 
 void input_capture_timer_config(void)
 {   
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+    
+    TIM_TimeBaseStructure.TIM_Period = 8000 - 1;
+    TIM_TimeBaseStructure.TIM_Prescaler = 9 - 1;
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
+    
     TIM_ICInitTypeDef  TIM_ICInitStructure;
     
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;

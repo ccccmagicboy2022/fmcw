@@ -24,11 +24,8 @@
 #include "stm32f4xx_it.h"
 #include "sys.h"
 
-uint16_t uhIC3ReadValue1 = 0;
-uint16_t uhIC3ReadValue2 = 0;
-uint16_t uhCaptureNumber = 0;
-uint32_t uwCapture = 0;
-float uwTIM1Freq = 0.0f;
+static uint16_t uhCaptureNumber = 0;
+uint16_t uhICReadValue;
 
 /** @addtogroup Template_Project
   * @{
@@ -188,40 +185,29 @@ void USART1_IRQHandler(void)
   * @param  None
   * @retval None
   */
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+    if(TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
+    {
+        TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+    }
+}
+
 void TIM1_CC_IRQHandler(void)
 {
     if(TIM_GetITStatus(TIM1, TIM_IT_CC1) == SET)
     {
-        /* Clear TIM1 Capture compare interrupt pending bit */
-        TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
         if(uhCaptureNumber == 0)
         {
-            /* Get the Input Capture value */
-            uhIC3ReadValue1 = TIM_GetCapture1(TIM1);
+            TIM_SetCounter(TIM1, 0);
             uhCaptureNumber = 1;
         }
         else if(uhCaptureNumber == 1)
         {
-            /* Get the Input Capture value */
-            uhIC3ReadValue2 = TIM_GetCapture1(TIM1);
-
-            /* Capture computation */
-            if (uhIC3ReadValue2 > uhIC3ReadValue1)
-            {
-                uwCapture = (uhIC3ReadValue2 - uhIC3ReadValue1);
-            }
-            else if (uhIC3ReadValue2 < uhIC3ReadValue1)
-            {
-                uwCapture = ((0xFFFF - uhIC3ReadValue1) + uhIC3ReadValue2);
-            }
-            else
-            {
-                uwCapture = 0;
-            }
-            /* Frequency computation */
-            uwTIM1Freq = (float)(SystemCoreClock * 8.0f / uwCapture);
+            uhICReadValue = TIM_GetCapture1(TIM1);
             uhCaptureNumber = 0;
         }
+        TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
     }
 }
 
