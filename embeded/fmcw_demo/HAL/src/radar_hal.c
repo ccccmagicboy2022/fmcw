@@ -38,7 +38,7 @@ uint8_t cal_once(float target_khz, uint16_t * dac_raw)
         arm_mean_f32(cap_freq_mean_a, FREQ_CAP_MEAN_NUM, &cap_freq_mean);
         if (ii%FREQ_CAP_MEAN_NUM == 0)
         {
-            //printf("target: %.3f, cap: %.3f KHz, dac: %d\r\n", target_khz, cap_freq_mean, dac_get_value());
+            //printf("{cap}%.3lf\n{dac}%d\n", cap_freq_mean, dac_get_value());
             res = pidExecu(target_khz, cap_freq_mean);
             if (res)
             {
@@ -57,12 +57,13 @@ uint8_t pidExecu(float target_khz, float cap_khz)
     float pidErr;
     static uint16_t ok_timer = 0;
 
-    pidErr = target_khz - cap_khz;	
+    pidErr = target_khz - cap_khz;
 
 	if(fabs(pidErr) > ERR_LIMIT)
     {
     	pidCtrl.out = arm_pid_f32(&pidCtrl.S, pidErr);
         dac_set_vol(pidCtrl.out);
+        USB_OTG_BSP_uDelay(2);
         ok_timer = 0;
 	}
     else
@@ -70,7 +71,8 @@ uint8_t pidExecu(float target_khz, float cap_khz)
         ok_timer++;
     }
     
-    if (ok_timer > 20)
+    //printf("{ok_timer}%d\n", ok_timer);
+    if (ok_timer > OK_TIMER_NUM)
     {
         return 1;
     }
@@ -94,11 +96,21 @@ void frequency_calibration(void)
     
     pidInit();
     
-    for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+    while(1)
     {
-        cal_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, &dac_raw);
-        printf("i: %d, dac: %d\r\n", i, dac_raw);
+        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+        {
+            cal_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, &dac_raw);
+            printf("{i}%d\n{dac_set}%d\n", i, dac_raw);
+        }
     }
+    
+    //check
+//    while(1)
+//    {
+//        dac_set_value(1647);
+//        printf("{cap}%.3lf\n", get_cap_divout2_at_khz());
+//    }
     
 }
 

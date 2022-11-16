@@ -32,11 +32,12 @@
 #define FREQ_MIN 24025  // MHz
 #define FREQ_MAX 24225  // MHz
 #define FREQ_OUT_DIV         (65536 * 16)
-#define FREQ_CAP_MEAN_NUM   500
-#define ERR_LIMIT           (0.0014f)
+#define FREQ_CAP_MEAN_NUM   150
+#define ERR_LIMIT           (0.0015f)
 #define KP                  (-1.56f)
 #define KI                  (-0.03f)
-#define KD                  (0.01f)
+#define KD                  (0.6f)
+#define OK_TIMER_NUM        2
 
 #define SAMPLE_NUM_PER_CHIRP 128
 #define DAC_WORK_RESOLUTION  128
