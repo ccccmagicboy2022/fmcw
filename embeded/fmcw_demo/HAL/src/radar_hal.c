@@ -1,7 +1,7 @@
 #include "radar_hal.h"
 #include "sys.h"
 
-uint16_t vt_tab[DAC_ALL_RESOLUTION] = {0};
+uint16_t vt_tab[DAC_ALL_RESOLUTION];
 float cap_freq_mean_a[FREQ_CAP_MEAN_NUM];
 extern uint16_t uhICReadValue;
 PidCtrlTypedef pidCtrl;
@@ -96,22 +96,42 @@ void frequency_calibration(void)
     
     pidInit();
     
-    while(1)
+    //while(1)
     {
         for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
         {
             cal_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, &dac_raw);
+            vt_tab[i] = dac_raw;
             printf("{i}%d\n{dac_set}%d\n", i, dac_raw);
         }
     }
     
-    //check
-//    while(1)
-//    {
-//        dac_set_value(1647);
-//        printf("{cap}%.3lf\n", get_cap_divout2_at_khz());
-//    }
+    input_capture_disable();
+    dac_first_deinit();
+    printf("frequency celibration finish\n");
+    CV_LOG("frequency celibration finish\n");
     
+    for (int i = DAC_WORK_RESOLUTION + 1; i < DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i++)
+    {
+        vt_tab[i] = vt_tab[DAC_WORK_RESOLUTION];
+    }
+    
+    for (int i = DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i < DAC_ALL_RESOLUTION; i++)
+    {
+        vt_tab[i] = vt_tab[0];
+    }
+    
+    //check vt_tab
+    for (int i = 0;i < DAC_ALL_RESOLUTION;i++)
+    {
+        printf("{vt_tab}%d\n", vt_tab[i]);
+    }
+}
+
+void input_capture_disable(void)
+{
+    TIM_ITConfig(TIM1, TIM_IT_CC1, DISABLE);
+    TIM_Cmd(TIM1, DISABLE);
 }
 
 void radar_spi_init(void)
@@ -128,6 +148,11 @@ void radar_init(void)
     radar_spi_init();
     input_capture_init();
     dac_init();
+    LED2_ON;
+    CV_LOG("frequency celibration start\n");
+    frequency_calibration();
+    LED3_ON;
+    dac_secend_init();
     adc_init();
 }
 
@@ -218,9 +243,10 @@ void dac_first_init(void)
     DAC_InitTypeDef  DAC_InitStructure;
     
     DAC_InitStructure.DAC_Trigger = DAC_Trigger_None;
-    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+    DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
+    DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
+    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
     DAC_Init(DAC_Channel_1, &DAC_InitStructure);
-    
     DAC_Cmd(DAC_Channel_1, ENABLE);
 }
 
@@ -229,26 +255,30 @@ void dac_first_deinit(void)
     DAC_Cmd(DAC_Channel_1, DISABLE);
 }
 
-void dac_secend_init(void)
+void dac_timer_config(void)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     
-    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
-    TIM_TimeBaseStructure.TIM_Period = 0xFF;          
-    TIM_TimeBaseStructure.TIM_Prescaler = 0;       
-    TIM_TimeBaseStructure.TIM_ClockDivision = 0;    
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  
-    TIM_TimeBaseInit(TIM6, &TIM_TimeBaseStructure);
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+    TIM_TimeBaseStructure.TIM_Period = CHIRP_WORK_TIME * (SystemCoreClock / 1000000) / DAC_WORK_RESOLUTION;
+    TIM_TimeBaseStructure.TIM_Prescaler = 0;
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM8, &TIM_TimeBaseStructure);
     
-    TIM_SelectOutputTrigger(TIM6, TIM_TRGOSource_Update);
-    TIM_Cmd(TIM6, ENABLE);
+    TIM_SelectOutputTrigger(TIM8, TIM_TRGOSource_Update);
     
+    TIM_Cmd(TIM8, ENABLE);
+}
+
+void dac_dma_config(void)
+{
     DMA_InitTypeDef DMA_InitStructure;
     
-    DMA_DeInit(DMA1_Stream6);
+    DMA_DeInit(DMA1_Stream5);
     DMA_InitStructure.DMA_Channel = DMA_Channel_7;  
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)DAC_DHR12R2_ADDRESS;
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)vt_tab;
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(DAC->DHR12R1);
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&vt_tab[0];
     DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
     DMA_InitStructure.DMA_BufferSize = DAC_ALL_RESOLUTION;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
@@ -261,18 +291,39 @@ void dac_secend_init(void)
     DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
     DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-    DMA_Init(DMA1_Stream6, &DMA_InitStructure);
+    DMA_Init(DMA1_Stream5, &DMA_InitStructure);
     
-    DMA_Cmd(DMA1_Stream6, ENABLE);
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    
+    DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TC);
+    DMA_ITConfig(DMA1_Stream5, DMA_IT_TC, ENABLE);
+    
+    DMA_Cmd(DMA1_Stream5, ENABLE);
+}
+
+void dac_secend_init(void)
+{
+    dac_timer_config();
     
     DAC_InitTypeDef  DAC_InitStructure;
     
-    DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
+    DAC_InitStructure.DAC_Trigger = DAC_Trigger_T8_TRGO;
     DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
-    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+    DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
+    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
     DAC_Init(DAC_Channel_1, &DAC_InitStructure);
-    
     DAC_Cmd(DAC_Channel_1, ENABLE);
+    
+    dac_dma_config();
+    
     DAC_DMACmd(DAC_Channel_1, ENABLE);
 }
 

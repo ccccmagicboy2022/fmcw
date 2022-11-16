@@ -21,7 +21,7 @@ void SysClkInit(void)
     //dac
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);
     //adc
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_APB2Periph_ADC3, ENABLE);

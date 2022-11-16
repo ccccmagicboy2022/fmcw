@@ -26,7 +26,7 @@ void led_init(void)
     
     GPIO_Init(GPIOE, &GPIO_InitStructure);
     
-    LED1_ON;
+    LED1_OFF;
     LED2_OFF;
     LED3_OFF;
     CV_LOG("LED1~3: ok!\r\n");

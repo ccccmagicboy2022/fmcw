@@ -3,7 +3,6 @@
 
 #include "sys.h"
 
-#define DAC_DHR12R2_ADDRESS    0x40007414
 #define ADC3_DR_ADDRESS        ((uint32_t)0x4001224C)
 #define SPI4_CS_HIGH GPIO_SetBits(GPIOE, GPIO_Pin_4)
 #define SPI4_CS_LOW GPIO_ResetBits(GPIOE, GPIO_Pin_4)
@@ -23,5 +22,10 @@ void dac_set_vol(float vol);
 void frequency_calibration(void);
 uint8_t cal_once(float target_khz, uint16_t * dac_raw);
 uint8_t pidExecu(float target_khz, float cap_khz);
+void input_capture_disable(void);
+void dac_first_deinit(void);
+void dac_secend_init(void);
+void dac_timer_config(void);
+void dac_dma_config(void);
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_

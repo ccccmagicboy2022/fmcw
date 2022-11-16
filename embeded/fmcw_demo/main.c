@@ -13,8 +13,6 @@ int32_t main(void)
     radar_init();
     fpga_init();
     bt_protocol_init();
-
-    frequency_calibration();
     
     Txbuffer[0] = 0xEB;
     

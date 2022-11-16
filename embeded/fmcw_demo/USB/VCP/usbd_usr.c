@@ -31,6 +31,7 @@ void wait_usb_init_ok(void)
     {
         //pass
     }
+    LED1_ON;
 }
 
 uint8_t get_usb_ok(void)

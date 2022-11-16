@@ -153,7 +153,10 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
-
+void DMA1_Stream5_IRQHandler(void)
+{
+    //happy start adc dma
+}
 /**
   * @brief  This function handles PPP interrupt request.
   * @param  None
