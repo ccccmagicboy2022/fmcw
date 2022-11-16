@@ -159,7 +159,7 @@ void radar_init(void)
 void adc_init(void)
 {
     AdcConfig();
-    ADC_SoftwareStartConv(ADC3);
+    ADC_SoftwareStartConv(ADC1);
     TimerConfig();
 }
 

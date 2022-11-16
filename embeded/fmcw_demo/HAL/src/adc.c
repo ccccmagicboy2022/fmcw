@@ -7,6 +7,7 @@
 #endif
 
 u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT] __attribute__ ((aligned(4)));
+
 u16 adc_data_buffer[SAMPLE_NUM_PER_CHIRP] __attribute__ ((aligned(4)));
 
 ring_buf_t ring_buffer = {
@@ -34,14 +35,14 @@ void TimerConfig(void)
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
-    TIM_TimeBaseStructure.TIM_Period = 0xFF;          
-    TIM_TimeBaseStructure.TIM_Prescaler = 0;       
-    TIM_TimeBaseStructure.TIM_ClockDivision = 0;    
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  
-    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+    TIM_TimeBaseStructure.TIM_Period = CHIRP_WORK_TIME * (SystemCoreClock / 2 / 1000000) / DAC_WORK_RESOLUTION;
+    TIM_TimeBaseStructure.TIM_Prescaler = 0;
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
     
-    TIM_SelectOutputTrigger(TIM2, TIM_TRGOSource_Update);
-    TIM_Cmd(TIM2, ENABLE);
+    TIM_SelectOutputTrigger(TIM3, TIM_TRGOSource_Update);
+    TIM_Cmd(TIM3, DISABLE);
 }
 
 void AdcConfig(void)
@@ -65,17 +66,18 @@ void AdcInitConfig(void)
     
     ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
     ADC_InitStructure.ADC_ScanConvMode = DISABLE;
-    ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+    ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
     ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Rising;
-    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_CC2;
+    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T3_TRGO;
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_NbrOfConversion = 1;
-    ADC_Init(ADC3, &ADC_InitStructure);
+    ADC_Init(ADC1, &ADC_InitStructure);
     
-    ADC_RegularChannelConfig(ADC3, ADC_Channel_8, 1, ADC_SampleTime_3Cycles);    
-    ADC_DMARequestAfterLastTransferCmd(ADC3, ENABLE);
-    ADC_DMACmd(ADC3, ENABLE);
-    ADC_Cmd(ADC3, ENABLE);
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_28Cycles);
+    
+    ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);
+    ADC_DMACmd(ADC1, ENABLE);
+    ADC_Cmd(ADC1, ENABLE);
 }
 
 /**
@@ -99,11 +101,12 @@ void DmaInitConfig(void)
 {
     DMA_InitTypeDef       DMA_InitStructure;
     
-    DMA_InitStructure.DMA_Channel = DMA_Channel_2;  
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)ADC3_DR_ADDRESS;
+    DMA_DeInit(DMA2_Stream0);
+    DMA_InitStructure.DMA_Channel = DMA_Channel_0;  
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(ADC1->DR);
     DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(&adc_data_buffer[0]);
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
-    DMA_InitStructure.DMA_BufferSize = ELEMENT_SIZE / sizeof(u16);
+    DMA_InitStructure.DMA_BufferSize = SAMPLE_NUM_PER_CHIRP;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -114,7 +117,8 @@ void DmaInitConfig(void)
     DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
     DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
- 
+    DMA_Init(DMA2_Stream0, &DMA_InitStructure);
+    
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -125,7 +129,9 @@ void DmaInitConfig(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    DMA_Init(DMA2_Stream0, &DMA_InitStructure);
+    DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TC);
+    DMA_ITConfig(DMA2_Stream0, DMA_IT_TC, ENABLE);
+    
     DMA_Cmd(DMA2_Stream0, ENABLE);
 }
 

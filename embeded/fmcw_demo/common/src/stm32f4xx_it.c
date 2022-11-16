@@ -155,8 +155,14 @@ void SysTick_Handler(void)
 /******************************************************************************/
 void DMA1_Stream5_IRQHandler(void)
 {
-    //happy start adc dma
+    TIM_Cmd(TIM3, ENABLE);
 }
+
+void DMA2_Stream0_IRQHandler(void)
+{
+    TIM_Cmd(TIM3, DISABLE);
+}
+
 /**
   * @brief  This function handles PPP interrupt request.
   * @param  None
