@@ -154,12 +154,36 @@ void radar_init(void)
     LED3_ON;
     dac_secend_init();
     adc_init();
+    frame_timer_init();
+}
+
+void frame_timer_init(void)
+{
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
+    TIM_TimeBaseStructure.TIM_Period = FRAME_TIME - 1;
+    TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 2 / 1000000 - 1;
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
+    
+    NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);    
+    
+    TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+    TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+    TIM_Cmd(TIM4, ENABLE);
 }
 
 void adc_init(void)
 {
     AdcConfig();
-    ADC_SoftwareStartConv(ADC1);
     TimerConfig();
 }
 
@@ -268,7 +292,7 @@ void dac_timer_config(void)
     
     TIM_SelectOutputTrigger(TIM8, TIM_TRGOSource_Update);
     
-    TIM_Cmd(TIM8, ENABLE);
+    TIM_Cmd(TIM8, DISABLE);
 }
 
 void dac_dma_config(void)
@@ -303,7 +327,7 @@ void dac_dma_config(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
     
-    DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TC);
+    DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5 | DMA_IT_HTIF5);
     DMA_ITConfig(DMA1_Stream5, DMA_IT_TC, ENABLE);
     
     DMA_Cmd(DMA1_Stream5, ENABLE);
@@ -424,5 +448,17 @@ void spi4_write_reg32(uint32_t word)
     }
     USB_OTG_BSP_uDelay(20);
     SPI4_CS_HIGH;
+}
+
+void start_dac_timer(void)
+{
+    TIM_SetCounter(TIM8, 0);
+    TIM_Cmd(TIM8, ENABLE);
+}
+
+void stop_dac_timer(void)
+{
+    TIM_Cmd(TIM8, DISABLE);
+    TIM_SetCounter(TIM8, 0);
 }
 

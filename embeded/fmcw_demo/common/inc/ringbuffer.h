@@ -3,7 +3,7 @@
 
 #include "sys.h"
 #include "common.h"
-#define ELEMENT_SIZE         (512U * 2U)
+#define ELEMENT_SIZE         (SAMPLE_NUM_PER_CHIRP * NUM_CHIRPS_PER_FRAME * 2U)
 #define ELEMENT_COUNT        (2U)
 
 

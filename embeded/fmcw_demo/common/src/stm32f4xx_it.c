@@ -26,7 +26,8 @@
 
 static uint16_t uhCaptureNumber = 0;
 uint16_t uhICReadValue;
-
+extern u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT] __attribute__ ((aligned(4)));
+extern ring_buf_t ring_buffer;
 /** @addtogroup Template_Project
   * @{
   */
@@ -155,12 +156,60 @@ void SysTick_Handler(void)
 /******************************************************************************/
 void DMA1_Stream5_IRQHandler(void)
 {
-    TIM_Cmd(TIM3, ENABLE);
+    static uint8_t chirp_index = 0;
+    
+    if(DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5))
+    {
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+    }
+    
+    if(DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5))
+    {        
+        if (NUM_CHIRPS_PER_FRAME == chirp_index++%(NUM_CHIRPS_PER_FRAME + 1))
+        {
+            stop_dac_timer();
+            chirp_index = 0;
+        }
+        else
+        {
+            start_adc_timer();
+        }
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
+    }    
 }
 
 void DMA2_Stream0_IRQHandler(void)
 {
-    TIM_Cmd(TIM3, DISABLE);
+    static uint8_t i = 1;
+    
+    if(DMA_GetITStatus(DMA2_Stream0, DMA_IT_HTIF0))
+    {
+        DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_HTIF0);
+    }
+    
+    if(DMA_GetITStatus(DMA2_Stream0, DMA_IT_TCIF0))
+    {
+        stop_adc_timer();
+        DMA_Cmd(DMA2_Stream0, DISABLE);
+        DMA2_Stream0->M0AR = (uint32_t)(&buffer[(i++%NUM_CHIRPS_PER_FRAME) * SAMPLE_NUM_PER_CHIRP]);
+        DMA_Cmd(DMA2_Stream0, ENABLE);
+        DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
+        
+        if (1 == i%(NUM_CHIRPS_PER_FRAME))
+        {
+            ring_buffer_put(&ring_buffer);
+        }
+    }    
+}
+
+void TIM4_IRQHandler(void)
+{
+    if(TIM_GetITStatus(TIM4, TIM_IT_Update))
+    {
+        TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+        LED1_TOGGLE;
+        start_dac_timer();
+    }
 }
 
 /**

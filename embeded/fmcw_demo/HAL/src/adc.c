@@ -8,8 +8,6 @@
 
 u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT] __attribute__ ((aligned(4)));
 
-u16 adc_data_buffer[SAMPLE_NUM_PER_CHIRP] __attribute__ ((aligned(4)));
-
 ring_buf_t ring_buffer = {
     .rd = 0,
     .wr = 0,
@@ -104,7 +102,7 @@ void DmaInitConfig(void)
     DMA_DeInit(DMA2_Stream0);
     DMA_InitStructure.DMA_Channel = DMA_Channel_0;  
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(ADC1->DR);
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(&adc_data_buffer[0]);
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(&buffer[0]);
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
     DMA_InitStructure.DMA_BufferSize = SAMPLE_NUM_PER_CHIRP;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
@@ -129,10 +127,23 @@ void DmaInitConfig(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TC);
+    DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0 | DMA_IT_HTIF0);
+    //DMA_ITConfig(DMA2_Stream0, DMA_IT_TC | DMA_IT_HT, ENABLE);
     DMA_ITConfig(DMA2_Stream0, DMA_IT_TC, ENABLE);
     
     DMA_Cmd(DMA2_Stream0, ENABLE);
+}
+
+void start_adc_timer(void)
+{
+    TIM_SetCounter(TIM3, 0);
+    TIM_Cmd(TIM3, ENABLE);
+}
+
+void stop_adc_timer(void)
+{
+    TIM_Cmd(TIM3, DISABLE);
+    TIM_SetCounter(TIM8, 0);
 }
 
 int get_sample_data(u8 *buf)

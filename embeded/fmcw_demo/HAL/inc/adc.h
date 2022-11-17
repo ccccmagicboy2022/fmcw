@@ -33,5 +33,7 @@ void DmaConfig(void);
 int is_data_available(void);
 void init_pins(void);
 void TimerConfig(void);
+void start_adc_timer(void);
+void stop_adc_timer(void);
 
 #endif

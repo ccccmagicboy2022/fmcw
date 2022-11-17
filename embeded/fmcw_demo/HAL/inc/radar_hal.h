@@ -27,5 +27,9 @@ void dac_first_deinit(void);
 void dac_secend_init(void);
 void dac_timer_config(void);
 void dac_dma_config(void);
+void frame_timer_init(void);
+void start_dac_timer(void);
+void stop_dac_timer(void);
+
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_
