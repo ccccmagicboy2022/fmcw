@@ -337,7 +337,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_USB_OTG_HS,USE_ULPI_PHY,HSE_VALUE=8000000,STM32F429_439xx,USE_STDPERIPH_DRIVER, __DEBUG,USE_DEVICE_DRIVER_LIB,_CC_ARM,DEBUG_MODE,ARM_MATH_CM4,SUPPORT_MCU_FIRM_UPDATE,__TARGET_FPU_VFP,__FPU_PRESENT,__FPU_USED,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
+              <Define>QUICK_CALC_FREQ,USE_USB_OTG_HS,USE_ULPI_PHY,HSE_VALUE=8000000,STM32F429_439xx,USE_STDPERIPH_DRIVER, __DEBUG,USE_DEVICE_DRIVER_LIB,_CC_ARM,DEBUG_MODE,ARM_MATH_CM4,SUPPORT_MCU_FIRM_UPDATE,__TARGET_FPU_VFP,__FPU_PRESENT,__FPU_USED,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
               <Undefine></Undefine>
               <IncludePath>..\MDK;..\driver\inc;..\driver\src;..\dsp\Include;..\common\inc;..\HAL\inc;..\HAL\flash;..\HAL\mcu_sdk;..\HAL\rtt;..\USB\STM32_USB_OTG_Driver\inc;..\USB\STM32_USB_Device_Library\Core\inc;..\USB\STM32_USB_Device_Library\Class\cdc\inc;..\USB\VCP</IncludePath>
             </VariousControls>
