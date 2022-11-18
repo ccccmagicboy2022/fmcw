@@ -11,9 +11,9 @@ float get_cap_divout2_at_khz(void)
     return (float)(SystemCoreClock / (uhICReadValue)) * 8.0f / 1000.0f;
 }
 
-double get_rf_freq_at_khz(void)
+float get_cap_rf_freq_at_khz(void)
 {
-    return get_cap_divout2_at_khz()*(double)(FREQ_OUT_DIV);
+    return get_cap_divout2_at_khz()*(float)(FREQ_OUT_DIV);
 }
 
 void pidInit()
@@ -106,11 +106,6 @@ void frequency_calibration(void)
         }
     }
     
-    input_capture_disable();
-    dac_first_deinit();
-    printf("frequency celibration finish\n");
-    CV_LOG("frequency celibration finish\n");
-    
     for (int i = DAC_WORK_RESOLUTION + 1; i < DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i++)
     {
         vt_tab[i] = vt_tab[DAC_WORK_RESOLUTION];
@@ -126,6 +121,48 @@ void frequency_calibration(void)
     {
         printf("{vt_tab}%d\n", vt_tab[i]);
     }
+    
+    while(1)
+    {
+        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+        {
+            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
+            USB_OTG_BSP_mDelay(1);
+        }
+    }
+    
+    input_capture_disable();
+    dac_first_deinit();
+    printf("frequency celibration finish\n");
+    CV_LOG("frequency celibration finish\n");    
+}
+
+uint8_t check_once(float target_khz, uint16_t dac_raw_in, uint8_t index)
+{
+    int16_t ii = 0;
+    float cap_freq_mean = 0.0f;
+    
+    float rf_start_freq_at_khz = 0.0f;
+    float rf_diff_freq_at_khz = 0.0f;
+    
+    rf_start_freq_at_khz = FREQ_MIN * 1000.0f;
+    rf_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f) / DAC_WORK_RESOLUTION;
+    
+    dac_set_value(dac_raw_in);
+    
+    while (1)
+    {
+        cap_freq_mean_a[((ii++)%FREQ_CHECK_MEAN_NUM)] = get_cap_rf_freq_at_khz();
+        arm_mean_f32(cap_freq_mean_a, FREQ_CHECK_MEAN_NUM, &cap_freq_mean);
+        if (ii%FREQ_CHECK_MEAN_NUM == 0)
+        {
+            printf("{check_freq_diff}%.1lf, %.1lf\n", cap_freq_mean, rf_start_freq_at_khz + index * rf_diff_freq_at_khz);
+            break;
+        }
+        USB_OTG_BSP_uDelay(2);
+    }
+    
+    return 1;
 }
 
 void input_capture_disable(void)
