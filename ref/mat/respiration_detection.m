@@ -1,13 +1,10 @@
-function [respiration_locs, respiration_state] = respiration_detection(data, r_fft_num, r_min_index, r_max_index, respiration_fft_num, fs_respiratory, background_line)
+function [respiration_locs, respiration_state] = respiration_detection(data, respiration_fft_num, fs_respiratory, background_line)
 
 %{
 Function Name: respiration_detection
-Description: respiration detection
+Description: Respiration detection
 Input:
-	data: Data after coherent accumulation
-	r_fft_num: Range dimension FFT points
-	r_min_index: Min range index
-	r_max_index: Max range index
+	data: 1dfft data after coherent integration
 	respiration_fft_num: Number of respiration fft points
 	fs_respiratory: Respiration equivalent sampling rate
 	background_line: Background energy line
@@ -17,23 +14,18 @@ Return:
 	respiration_state: Target respiration state
 %}
 
-numFrames = size(data, 2);
-Range_profile = zeros(r_fft_num, numFrames);
-Doppler_profile = zeros(r_max_index- r_min_index+ 1, respiration_fft_num);
-lowfreq_amp = zeros(r_max_index- r_min_index+ 1, 1);
-% 1dfft
-for i1 = 1: numFrames
-    Range_profile(:, i1) = fftshift(fft(data(:, i1), r_fft_num))/ r_fft_num;
-end
+% Space definition
+v_fft = zeros(size(data, 1), respiration_fft_num);
+lowfreq_amp = zeros(size(data, 1), 1);
 % 2dfft & Remove zero frequency
-for i2 = 1: r_max_index- r_min_index+ 1
-    Doppler_profile(i2, :) = fftshift(fft(Range_profile(i2+ r_min_index- 1, :), respiration_fft_num))/ respiration_fft_num;
-    Doppler_profile(i2, respiration_fft_num/ 2- 1: respiration_fft_num/ 2+ 1) = 0;
+for i1 = 1: size(data, 1)
+    v_fft(i1, :) = fftshift(fft(data(i1, :), respiration_fft_num))/ respiration_fft_num;
 end
+v_fft(:, respiration_fft_num/ 2: respiration_fft_num/ 2+ 2) = 0;
 % Respiration detection
 freq_limit = ceil([0.1 3]/ (fs_respiratory/ respiration_fft_num))+ respiration_fft_num/ 2;
-for i3 = 1: r_max_index- r_min_index+ 1
-    lowfreq_amp(i3, 1) = sum(abs(Doppler_profile(i3, freq_limit(1, 1): freq_limit(1, 2))));
+for i2 = 1: size(v_fft, 1)
+	lowfreq_amp(i2, 1) = sum(abs(v_fft(i2, freq_limit(1, 1): freq_limit(1, 2))));
 end
 target_index = find(lowfreq_amp > background_line);
 if ~isempty(target_index)
