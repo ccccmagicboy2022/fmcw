@@ -1,6 +1,6 @@
 #include "sys.h"
 
-s16 data_buf[SAMPLE_NUM_PER_CHIRP * NUM_CHIRPS_PER_FRAME];
+s16 data_buf[SAMPLE_NUM_PER_CHIRP * NUM_CHIRPS_PER_FRAME] __attribute__ ((aligned (4)));
 __attribute__ ((weak)) int detect_presense(s16 *data);
 
 int32_t main(void)
