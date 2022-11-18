@@ -55,7 +55,7 @@ void AdcInitConfig(void)
     ADC_CommonInitTypeDef ADC_CommonInitStructure;
     
     ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-    ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
+    ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div4;
     ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
     ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
     ADC_CommonInit(&ADC_CommonInitStructure);

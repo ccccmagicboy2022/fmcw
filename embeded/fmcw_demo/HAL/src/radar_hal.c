@@ -166,19 +166,19 @@ void frame_timer_init(void)
     TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 2 / 1000000 - 1;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
+    TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
     
     NVIC_InitTypeDef NVIC_InitStructure;
     
-    NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);    
     
-    TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
-    TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
-    TIM_Cmd(TIM4, ENABLE);
+    TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
+    TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
+    TIM_Cmd(TIM5, ENABLE);
 }
 
 void adc_init(void)

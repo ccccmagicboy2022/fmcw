@@ -27,7 +27,7 @@ void SysClkInit(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
     //frame timer
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
     //spi3
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
 }

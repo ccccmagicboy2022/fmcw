@@ -181,6 +181,8 @@ void DMA1_Stream5_IRQHandler(void)
 void DMA2_Stream0_IRQHandler(void)
 {
     static uint8_t i = 1;
+    static uint8_t j = 0;
+    u32 current_address = 0;
     
     if(DMA_GetITStatus(DMA2_Stream0, DMA_IT_HTIF0))
     {
@@ -190,23 +192,34 @@ void DMA2_Stream0_IRQHandler(void)
     if(DMA_GetITStatus(DMA2_Stream0, DMA_IT_TCIF0))
     {
         stop_adc_timer();
+        
         DMA_Cmd(DMA2_Stream0, DISABLE);
-        DMA2_Stream0->M0AR = (uint32_t)(&buffer[(i++%NUM_CHIRPS_PER_FRAME) * SAMPLE_NUM_PER_CHIRP]);
+        
+        if (0 == i%(NUM_CHIRPS_PER_FRAME))
+        {
+            j++;
+        }
+        
+        DMA2_Stream0->M0AR = (uint32_t)(&buffer[(i++%NUM_CHIRPS_PER_FRAME) * SAMPLE_NUM_PER_CHIRP \
+                                        + ((j%ELEMENT_COUNT) * NUM_CHIRPS_PER_FRAME * SAMPLE_NUM_PER_CHIRP)]);
         DMA_Cmd(DMA2_Stream0, ENABLE);
+        
         DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
         
         if (1 == i%(NUM_CHIRPS_PER_FRAME))
         {
             ring_buffer_put(&ring_buffer);
         }
+        
+        current_address = DMA2_Stream0->M0AR;
     }    
 }
 
-void TIM4_IRQHandler(void)
+void TIM5_IRQHandler(void)
 {
-    if(TIM_GetITStatus(TIM4, TIM_IT_Update))
+    if(TIM_GetITStatus(TIM5, TIM_IT_Update))
     {
-        TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+        TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
         LED1_TOGGLE;
         start_dac_timer();
     }
