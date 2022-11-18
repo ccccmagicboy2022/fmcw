@@ -26,6 +26,6 @@ int32_t main(void)
 __attribute__ ((weak)) int detect_presense(s16 *data)
 {
     printf("algo run once!\r\n");
-    USB_SendData((u8 *)data, 16);
+    USB_SendData((u8 *)data, sizeof(data_buf));
     return 0;
 }
