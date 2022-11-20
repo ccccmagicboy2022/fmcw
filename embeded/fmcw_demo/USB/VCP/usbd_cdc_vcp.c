@@ -183,6 +183,7 @@ uint32_t VCP_CheckDataSent(void)
 void USB_SendData(uint8_t * pbuf, uint32_t buf_len)
 {
     while (VCP_CheckDataSent() == 1);
+    while (DCD_GetEPStatus(&USB_OTG_dev, CDC_IN_EP) != USB_OTG_EP_TX_NAK);
     data_sent = 0;
     DCD_EP_Tx(&USB_OTG_dev, CDC_IN_EP, pbuf, buf_len);
 }
