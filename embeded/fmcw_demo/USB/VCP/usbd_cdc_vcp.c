@@ -54,17 +54,17 @@ extern uint32_t APP_Rx_ptr_in;  /* Increment this pointer or roll it back to
 static uint16_t VCP_Init(void);
 static uint16_t VCP_DeInit(void);
 static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t * Buf, uint32_t Len);
-static uint16_t VCP_DataTx(void);
+static uint16_t VCP_DataTx(uint8_t * Buf, uint32_t Len);
 static uint16_t VCP_DataRx(uint8_t * Buf, uint32_t Len);
 
 static uint16_t VCP_COMConfig(uint8_t Conf);
 
 CDC_IF_Prop_TypeDef VCP_fops = {
-  VCP_Init,
-  VCP_DeInit,
-  VCP_Ctrl,
-  VCP_DataTx,
-  VCP_DataRx
+    VCP_Init,
+    VCP_DeInit,
+    VCP_Ctrl,
+    VCP_DataTx,
+    VCP_DataRx
 };
 
 /* Private functions --------------------------------------------------------- */
@@ -76,7 +76,7 @@ CDC_IF_Prop_TypeDef VCP_fops = {
   */
 static uint16_t VCP_Init(void)
 {
-  return USBD_OK;
+    return USBD_OK;
 }
 
 /**
@@ -87,8 +87,7 @@ static uint16_t VCP_Init(void)
   */
 static uint16_t VCP_DeInit(void)
 {
-
-  return USBD_OK;
+    return USBD_OK;
 }
 
 
@@ -167,9 +166,18 @@ static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t * Buf, uint32_t Len)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else VCP_FAIL
   */
-uint16_t VCP_DataTx(void)
+uint16_t VCP_DataTx(uint8_t * Buf, uint32_t Len)
 {
-    data_sent = 1;
+    for(int i=0;i<Len;i++)
+    {
+        APP_Rx_Buffer[APP_Rx_ptr_in] = Buf[i];
+        APP_Rx_ptr_in++;
+        
+        if (APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+        {
+            APP_Rx_ptr_in = 0;
+        }
+    }    
     return USBD_OK;
 }
 
@@ -182,10 +190,7 @@ uint32_t VCP_CheckDataSent(void)
 
 void USB_SendData(uint8_t * pbuf, uint32_t buf_len)
 {
-    while (VCP_CheckDataSent() == 1);
-    while (DCD_GetEPStatus(&USB_OTG_dev, CDC_IN_EP) != USB_OTG_EP_TX_NAK);
-    data_sent = 0;
-    DCD_EP_Tx(&USB_OTG_dev, CDC_IN_EP, pbuf, buf_len);
+    VCP_DataTx(pbuf, buf_len);
 }
 
 /**

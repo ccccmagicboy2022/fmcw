@@ -122,14 +122,14 @@ void frequency_calibration(void)
         printf("{vt_tab}%d\n", vt_tab[i]);
     }
     
-    while(1)
-    {
-        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
-        {
-            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
-            USB_OTG_BSP_mDelay(1);
-        }
-    }
+    //while(1)
+//    {
+//        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+//        {
+//            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
+//            USB_OTG_BSP_mDelay(1);
+//        }
+//    }
     
     input_capture_disable();
     dac_first_deinit();
