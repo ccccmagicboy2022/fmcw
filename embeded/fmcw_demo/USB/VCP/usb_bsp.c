@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V1.2.1
   * @date    17-March-2018
-  * @brief   This file is responsible to offer board support package and is 
+  * @brief   This file is responsible to offer board support package and is
   *          configurable by user.
   ******************************************************************************
   * @attention

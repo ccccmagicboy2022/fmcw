@@ -42,7 +42,7 @@ uint8_t get_usb_ok(void)
 * @{
 */
 
-/** @defgroup USBD_USR 
+/** @defgroup USBD_USR
 * @brief    This file includes the user application layer
 * @{
 */
@@ -114,7 +114,7 @@ USBD_Usr_cb_TypeDef USR_cb = {
 */
 
 /**
-* @brief  USBD_USR_Init 
+* @brief  USBD_USR_Init
 *         Displays the message on LCD for host lib initialization
 * @param  None
 * @retval None
@@ -133,7 +133,7 @@ void USBD_USR_Init(void)
 }
 
 /**
-* @brief  USBD_USR_DeviceReset 
+* @brief  USBD_USR_DeviceReset
 *         Displays the message on LCD on device Reset Event
 * @param  speed : device speed
 * @retval None
@@ -168,7 +168,7 @@ void USBD_USR_DeviceConfigured(void)
 }
 
 /**
-* @brief  USBD_USR_DeviceSuspended 
+* @brief  USBD_USR_DeviceSuspended
 *         Displays the message on LCD on device suspend Event
 * @param  None
 * @retval None
@@ -181,7 +181,7 @@ void USBD_USR_DeviceSuspended(void)
 
 
 /**
-* @brief  USBD_USR_DeviceResumed 
+* @brief  USBD_USR_DeviceResumed
 *         Displays the message on LCD on device resume Event
 * @param  None
 * @retval None

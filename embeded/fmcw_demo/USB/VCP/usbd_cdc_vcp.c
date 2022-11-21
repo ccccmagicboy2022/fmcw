@@ -94,7 +94,7 @@ static uint16_t VCP_DeInit(void)
 /**
   * @brief  VCP_Ctrl
   *         Manage the CDC class requests
-  * @param  Cmd: Command code            
+  * @param  Cmd: Command code
   * @param  Buf: Buffer containing command data (request parameters)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the operation (USBD_OK in all cases)
@@ -160,7 +160,7 @@ static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t * Buf, uint32_t Len)
 
 /**
   * @brief  VCP_DataTx
-  *         CDC received data to be send over USB IN endpoint are managed in 
+  *         CDC received data to be send over USB IN endpoint are managed in
   *         this function.
   * @param  Buf: Buffer of data to be sent
   * @param  Len: Number of data to be sent (in bytes)
@@ -172,12 +172,12 @@ uint16_t VCP_DataTx(uint8_t * Buf, uint32_t Len)
     {
         APP_Rx_Buffer[APP_Rx_ptr_in] = Buf[i];
         APP_Rx_ptr_in++;
-        
+
         if (APP_Rx_ptr_in == APP_RX_DATA_SIZE)
         {
             APP_Rx_ptr_in = 0;
         }
-    }    
+    }
     return USBD_OK;
 }
 
@@ -195,15 +195,15 @@ void USB_SendData(uint8_t * pbuf, uint32_t buf_len)
 
 /**
   * @brief  VCP_DataRx
-  *         Data received over USB OUT endpoint are sent over CDC interface 
+  *         Data received over USB OUT endpoint are sent over CDC interface
   *         through this function.
-  *           
+  *
   *         @note
-  *         This function will block any OUT packet reception on USB endpoint 
+  *         This function will block any OUT packet reception on USB endpoint
   *         until exiting this function. If you exit this function before transfer
-  *         is complete on CDC interface (ie. using DMA controller) it will result 
+  *         is complete on CDC interface (ie. using DMA controller) it will result
   *         in receiving more data while previous ones are still not sent.
-  *                 
+  *
   * @param  Buf: Buffer of data received
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else VCP_FAIL

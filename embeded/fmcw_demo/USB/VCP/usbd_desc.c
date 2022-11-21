@@ -31,7 +31,7 @@
   */
 
 
-/** @defgroup USBD_DESC 
+/** @defgroup USBD_DESC
   * @brief USBD descriptors module
   * @{
   */
@@ -180,7 +180,7 @@ static void Get_SerialNum(void);
   */
 
 /**
-* @brief  USBD_USR_DeviceDescriptor 
+* @brief  USBD_USR_DeviceDescriptor
 *         return the device descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -193,7 +193,7 @@ uint8_t *USBD_USR_DeviceDescriptor(uint8_t speed, uint16_t * length)
 }
 
 /**
-* @brief  USBD_USR_LangIDStrDescriptor 
+* @brief  USBD_USR_LangIDStrDescriptor
 *         return the LangID string descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -207,7 +207,7 @@ uint8_t *USBD_USR_LangIDStrDescriptor(uint8_t speed, uint16_t * length)
 
 
 /**
-* @brief  USBD_USR_ProductStrDescriptor 
+* @brief  USBD_USR_ProductStrDescriptor
 *         return the product string descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -229,7 +229,7 @@ uint8_t *USBD_USR_ProductStrDescriptor(uint8_t speed, uint16_t * length)
 }
 
 /**
-* @brief  USBD_USR_ManufacturerStrDescriptor 
+* @brief  USBD_USR_ManufacturerStrDescriptor
 *         return the manufacturer string descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -243,7 +243,7 @@ uint8_t *USBD_USR_ManufacturerStrDescriptor(uint8_t speed, uint16_t * length)
 }
 
 /**
-* @brief  USBD_USR_SerialStrDescriptor 
+* @brief  USBD_USR_SerialStrDescriptor
 *         return the serial number string descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -261,7 +261,7 @@ uint8_t *USBD_USR_SerialStrDescriptor(uint8_t speed, uint16_t * length)
 }
 
 /**
-* @brief  USBD_USR_ConfigStrDescriptor 
+* @brief  USBD_USR_ConfigStrDescriptor
 *         return the configuration string descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -284,7 +284,7 @@ uint8_t *USBD_USR_ConfigStrDescriptor(uint8_t speed, uint16_t * length)
 
 
 /**
-* @brief  USBD_USR_InterfaceStrDescriptor 
+* @brief  USBD_USR_InterfaceStrDescriptor
 *         return the interface string descriptor
 * @param  speed : current device speed
 * @param  length : pointer to data length variable
@@ -306,8 +306,8 @@ uint8_t *USBD_USR_InterfaceStrDescriptor(uint8_t speed, uint16_t * length)
 }
 
 /**
-  * @brief  Create the serial number string descriptor 
-  * @param  None 
+  * @brief  Create the serial number string descriptor
+  * @param  None
   * @retval None
   */
 static void Get_SerialNum(void)
@@ -328,9 +328,9 @@ static void Get_SerialNum(void)
 }
 
 /**
-  * @brief  Convert Hex 32Bits value into char 
+  * @brief  Convert Hex 32Bits value into char
   * @param  value: value to convert
-  * @param  pbuf: pointer to the buffer 
+  * @param  pbuf: pointer to the buffer
   * @param  len: buffer length
   * @retval None
   */

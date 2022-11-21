@@ -31,7 +31,7 @@ uint8_t cal_once(float target_khz, uint16_t * dac_raw)
     float cap_freq_mean = 0.0f;
     int16_t ii = 0;
     uint8_t res = 0;
-    
+
     while (1)
     {
         cap_freq_mean_a[((ii++)%FREQ_CAP_MEAN_NUM)] = get_cap_divout2_at_khz();
@@ -46,9 +46,9 @@ uint8_t cal_once(float target_khz, uint16_t * dac_raw)
             }
         }
     }
-    
+
     *dac_raw = dac_get_value();
-    
+
     return 1;
 }
 
@@ -59,18 +59,18 @@ uint8_t pidExecu(float target_khz, float cap_khz)
 
     pidErr = target_khz - cap_khz;
 
-	if(fabs(pidErr) > ERR_LIMIT)
+    if(fabs(pidErr) > ERR_LIMIT)
     {
-    	pidCtrl.out = arm_pid_f32(&pidCtrl.S, pidErr);
+        pidCtrl.out = arm_pid_f32(&pidCtrl.S, pidErr);
         dac_set_vol(pidCtrl.out);
         USB_OTG_BSP_uDelay(2);
         ok_timer = 0;
-	}
+    }
     else
     {
         ok_timer++;
     }
-    
+
     //printf("{ok_timer}%d\n", ok_timer);
     if (ok_timer > OK_TIMER_NUM)
     {
@@ -87,15 +87,15 @@ void frequency_calibration(void)
     float target_divout2_start_freq_at_khz = 0.0f;
     float target_divout2_diff_freq_at_khz = 0.0f;
     uint16_t dac_raw = 0;
-    
+
     target_divout2_start_freq_at_khz = FREQ_MIN * 1000.0f / FREQ_OUT_DIV;
     target_divout2_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
-        
+
     printf("target_divout2_start_freq_at_hz: %.3f KHz\r\n", target_divout2_start_freq_at_khz);
     printf("target_divout2_diff_freq_at_hz: %.6f KHz\r\n", target_divout2_diff_freq_at_khz);
-    
+
     pidInit();
-    
+
     //while(1)
     {
         for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
@@ -105,23 +105,23 @@ void frequency_calibration(void)
             printf("{i}%d\n{dac_set}%d\n", i, dac_raw);
         }
     }
-    
+
     for (int i = DAC_WORK_RESOLUTION + 1; i < DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i++)
     {
         vt_tab[i] = vt_tab[DAC_WORK_RESOLUTION];
     }
-    
+
     for (int i = DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i < DAC_ALL_RESOLUTION; i++)
     {
         vt_tab[i] = vt_tab[0];
     }
-    
+
     //check vt_tab
     for (int i = 0;i < DAC_ALL_RESOLUTION;i++)
     {
         printf("{vt_tab}%d\n", vt_tab[i]);
     }
-    
+
     //while(1)
 //    {
 //        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
@@ -130,26 +130,26 @@ void frequency_calibration(void)
 //            USB_OTG_BSP_mDelay(1);
 //        }
 //    }
-    
+
     input_capture_disable();
     dac_first_deinit();
     printf("frequency celibration finish\n");
-    CV_LOG("frequency celibration finish\n");    
+    CV_LOG("frequency celibration finish\n");
 }
 
 uint8_t check_once(float target_khz, uint16_t dac_raw_in, uint8_t index)
 {
     int16_t ii = 0;
     float cap_freq_mean = 0.0f;
-    
+
     float rf_start_freq_at_khz = 0.0f;
     float rf_diff_freq_at_khz = 0.0f;
-    
+
     rf_start_freq_at_khz = FREQ_MIN * 1000.0f;
     rf_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f) / DAC_WORK_RESOLUTION;
-    
+
     dac_set_value(dac_raw_in);
-    
+
     while (1)
     {
         cap_freq_mean_a[((ii++)%FREQ_CHECK_MEAN_NUM)] = get_cap_rf_freq_at_khz();
@@ -161,7 +161,7 @@ uint8_t check_once(float target_khz, uint16_t dac_raw_in, uint8_t index)
         }
         USB_OTG_BSP_uDelay(2);
     }
-    
+
     return 1;
 }
 
@@ -197,22 +197,22 @@ void radar_init(void)
 void frame_timer_init(void)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    
-    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
+
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
     TIM_TimeBaseStructure.TIM_Period = FRAME_TIME - 1;
     TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 2 / 1000000 - 1;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
-    
+
     NVIC_InitTypeDef NVIC_InitStructure;
-    
+
     NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);    
-    
+    NVIC_Init(&NVIC_InitStructure);
+
     TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
     TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
     TIM_Cmd(TIM5, ENABLE);
@@ -227,7 +227,7 @@ void adc_init(void)
 void input_capture_gpio_config(void)
 {
     GPIO_PinAFConfig(GPIOE, GPIO_PinSource9, GPIO_AF_TIM1);
-    
+
     GPIO_InitTypeDef GPIO_InitStructure;
 
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -250,7 +250,7 @@ void input_capture_nvic_config(void)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-    
+
     NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_TIM10_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -259,30 +259,30 @@ void input_capture_nvic_config(void)
 }
 
 void input_capture_timer_config(void)
-{   
+{
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-    
+
     TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
     TIM_TimeBaseStructure.TIM_Prescaler = 0;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
-    
+
     TIM_ICInitTypeDef  TIM_ICInitStructure;
-    
+
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
     TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV8;
     TIM_ICInitStructure.TIM_ICFilter = 0;
-    
+
     TIM_ICInit(TIM1, &TIM_ICInitStructure);
     TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE);
     TIM_Cmd(TIM1, ENABLE);
 }
 
 void input_capture_init(void)
-{   
+{
     input_capture_gpio_config();
     input_capture_nvic_config();
     input_capture_timer_config();
@@ -302,7 +302,7 @@ void dac_gpio_config(void)
 void dac_first_init(void)
 {
     DAC_InitTypeDef  DAC_InitStructure;
-    
+
     DAC_InitStructure.DAC_Trigger = DAC_Trigger_None;
     DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
     DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
@@ -319,25 +319,25 @@ void dac_first_deinit(void)
 void dac_timer_config(void)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    
+
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
     TIM_TimeBaseStructure.TIM_Period = CHIRP_WORK_TIME * (SystemCoreClock / 1000000) / DAC_WORK_RESOLUTION;
     TIM_TimeBaseStructure.TIM_Prescaler = 0;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM8, &TIM_TimeBaseStructure);
-    
+
     TIM_SelectOutputTrigger(TIM8, TIM_TRGOSource_Update);
-    
+
     TIM_Cmd(TIM8, DISABLE);
 }
 
 void dac_dma_config(void)
 {
     DMA_InitTypeDef DMA_InitStructure;
-    
+
     DMA_DeInit(DMA1_Stream5);
-    DMA_InitStructure.DMA_Channel = DMA_Channel_7;  
+    DMA_InitStructure.DMA_Channel = DMA_Channel_7;
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(DAC->DHR12R1);
     DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&vt_tab[0];
     DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
@@ -348,12 +348,12 @@ void dac_dma_config(void)
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
     DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
     DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;         
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
     DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
     DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
     DMA_Init(DMA1_Stream5, &DMA_InitStructure);
-    
+
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -363,28 +363,28 @@ void dac_dma_config(void)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-    
+
     DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5 | DMA_IT_HTIF5);
     DMA_ITConfig(DMA1_Stream5, DMA_IT_TC, ENABLE);
-    
+
     DMA_Cmd(DMA1_Stream5, ENABLE);
 }
 
 void dac_secend_init(void)
 {
     dac_timer_config();
-    
+
     DAC_InitTypeDef  DAC_InitStructure;
-    
+
     DAC_InitStructure.DAC_Trigger = DAC_Trigger_T8_TRGO;
     DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
     DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
     DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
     DAC_Init(DAC_Channel_1, &DAC_InitStructure);
     DAC_Cmd(DAC_Channel_1, ENABLE);
-    
+
     dac_dma_config();
-    
+
     DAC_DMACmd(DAC_Channel_1, ENABLE);
 }
 
@@ -408,9 +408,9 @@ uint16_t dac_get_value(void)
 void dac_set_vol(float vol)
 {
     uint32_t dac_raw = 0;
-    
+
     dac_raw = vol * 4095.0f / 3.3f + 0.5f;
-    
+
     DAC_SetChannel1Data(DAC_Align_12b_R, dac_raw);
 }
 
@@ -424,7 +424,7 @@ void spi4_cs_init(void)
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-    
+
     SPI4_CS_HIGH;
 }
 

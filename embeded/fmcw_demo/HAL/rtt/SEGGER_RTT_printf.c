@@ -401,24 +401,24 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
       // Handle specifiers
       //
       switch (c) {
-//----------输出浮点-----------------------------      
-		case 'f':
-		case 'F':
-		{
-			float fv;
-			fv = (float)va_arg(*pParamList, double);    //取出输入的浮点数值
-			
-			v = (int)fv;                                //取整数部分
-			
-			_PrintInt(&BufferDesc, v, 10u, NumDigits, FieldWidth, FormatFlags); //显示整数，支持负数
-			_StoreChar(&BufferDesc, '.');                                        //显示小数点
-			
-			v = abs((int)(fv * 1000));               
-			v = v % 1000;
-			_PrintInt(&BufferDesc, v, 10u, 3, FieldWidth, FormatFlags);          //显示小数点后3位
-		}
-		break;
-//---------------------------------------  
+//----------输出浮点-----------------------------
+        case 'f':
+        case 'F':
+        {
+            float fv;
+            fv = (float)va_arg(*pParamList, double);    //取出输入的浮点数值
+
+            v = (int)fv;                                //取整数部分
+
+            _PrintInt(&BufferDesc, v, 10u, NumDigits, FieldWidth, FormatFlags); //显示整数，支持负数
+            _StoreChar(&BufferDesc, '.');                                        //显示小数点
+
+            v = abs((int)(fv * 1000));
+            v = v % 1000;
+            _PrintInt(&BufferDesc, v, 10u, 3, FieldWidth, FormatFlags);          //显示小数点后3位
+        }
+        break;
+//---------------------------------------
 
       case 'c': {
         char c0;

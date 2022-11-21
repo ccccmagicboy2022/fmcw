@@ -145,7 +145,7 @@ Return parameter: none
 void bt_uart_write_frame(uint8_t fr_type, uint16_t len)
 {
     uint8_t check_sum = 0;
-    
+
     bt_uart_tx_buf[HEAD_FIRST] = 0x55;
     bt_uart_tx_buf[HEAD_SECOND] = 0xaa;
     bt_uart_tx_buf[PROTOCOL_VERSION] = VERSION;
@@ -290,7 +290,7 @@ void data_handle(uint16_t offset)
     case WORK_MODE_CMD:            // Query module working mode set by MCU
         get_mcu_bt_mode();
         break;
-    
+
     case BT_STATE_CMD:                                  // bt work state
         bt_work_state = bt_uart_rx_buf[offset + DATA_START];
         if (bt_work_state == 0x01 || bt_work_state == 0x00) {
@@ -302,7 +302,7 @@ void data_handle(uint16_t offset)
     case BT_RESET_CMD:                 // Reset BT (BT returns success)
         reset_bt_flag = RESET_BT_SUCCESS;
         break;
-    
+
     case DATA_QUERT_CMD:                     // dp data handled
         total_len = bt_uart_rx_buf[offset + LENGTH_HIGH] * 0x100;
         total_len += bt_uart_rx_buf[offset + LENGTH_LOW];

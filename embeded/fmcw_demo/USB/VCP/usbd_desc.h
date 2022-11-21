@@ -17,7 +17,7 @@
   *                      <http://www.st.com/SLA0044>
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 
@@ -30,11 +30,11 @@
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
   */
-  
+
 /** @defgroup USB_DESC
   * @brief general defines for the usb device library file
   * @{
-  */ 
+  */
 
 /** @defgroup USB_DESC_Exported_Defines
   * @{
@@ -55,7 +55,7 @@
 #else
 #define         DEVICE_ID1          (0x1FFFF7E8)
 #define         DEVICE_ID2          (0x1FFFF7EA)
-#define         DEVICE_ID3          (0x1FFFF7EC)  
+#define         DEVICE_ID3          (0x1FFFF7EC)
 #endif
 
 
@@ -63,7 +63,7 @@
 
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup USBD_DESC_Exported_TypesDefinitions
@@ -71,33 +71,33 @@
   */
 /**
   * @}
-  */ 
+  */
 
 
 
 /** @defgroup USBD_DESC_Exported_Macros
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USBD_DESC_Exported_Variables
   * @{
-  */ 
+  */
 extern  uint8_t USBD_DeviceDesc  [USB_SIZ_DEVICE_DESC];
 extern  uint8_t USBD_StrDesc[USB_MAX_STR_DESC_SIZ];
-extern  uint8_t USBD_OtherSpeedCfgDesc[USB_LEN_CFG_DESC]; 
+extern  uint8_t USBD_OtherSpeedCfgDesc[USB_LEN_CFG_DESC];
 extern  uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC];
 extern  uint8_t USBD_LangIDDesc[USB_SIZ_STRING_LANGID];
-extern  USBD_DEVICE USR_desc; 
+extern  USBD_DEVICE USR_desc;
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USBD_DESC_Exported_FunctionsPrototype
   * @{
-  */ 
+  */
 
 
 uint8_t *     USBD_USR_DeviceDescriptor( uint8_t speed , uint16_t *length);
@@ -109,20 +109,20 @@ uint8_t *     USBD_USR_ConfigStrDescriptor( uint8_t speed , uint16_t *length);
 uint8_t *     USBD_USR_InterfaceStrDescriptor( uint8_t speed , uint16_t *length);
 
 #ifdef USB_SUPPORT_USER_STRING_DESC
-uint8_t *     USBD_USR_USRStringDesc (uint8_t speed, uint8_t idx , uint16_t *length);  
-#endif /* USB_SUPPORT_USER_STRING_DESC */  
-  
+uint8_t *     USBD_USR_USRStringDesc (uint8_t speed, uint8_t idx , uint16_t *length);
+#endif /* USB_SUPPORT_USER_STRING_DESC */
+
 /**
   * @}
-  */ 
+  */
 
 #endif /* __USBD_DESC_H */
 
 /**
   * @}
-  */ 
+  */
 
 /**
 * @}
-*/ 
+*/
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -10,7 +10,7 @@ void mcu429_init(void)
 
     SysClkInit();
     clk_test();
-    
+
     led_init();
 }
 
@@ -23,9 +23,9 @@ void led_init(void)
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    
+
     GPIO_Init(GPIOE, &GPIO_InitStructure);
-    
+
     LED1_OFF;
     LED2_OFF;
     LED3_OFF;

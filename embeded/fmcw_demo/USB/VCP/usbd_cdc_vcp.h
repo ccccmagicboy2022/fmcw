@@ -29,7 +29,7 @@
 
 
 /* Exported typef ------------------------------------------------------------*/
-/* The following structures groups all needed parameters to be configured for the 
+/* The following structures groups all needed parameters to be configured for the
    ComPort. These parameters can modified on the fly by the host through CDC class
    command class requests. */
 typedef struct
