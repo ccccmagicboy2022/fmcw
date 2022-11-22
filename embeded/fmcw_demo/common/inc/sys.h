@@ -26,6 +26,8 @@
 #include "usb_bsp.h"
 #include "usbd_cdc_vcp.h"
 
+#include "presence_detection_fmcw.h"
+
 #define SEGGER_RTT_IN_RAM   1
 
 ///////////////////////////
@@ -55,7 +57,7 @@
 #define DAC_WORK_RESOLUTION  128
 #define CHIRP_WORK_TIME      400    // us
 #define CHIRP_IDLE_TIME      200    // us
-#define FRAME_TIME           (40 * 1000)  // us
+#define FRAME_TIME_D           (40 * 1000)  // us
 
 #define DAC_IDEL_RESOLUTION  (DAC_WORK_RESOLUTION * CHIRP_IDLE_TIME / CHIRP_WORK_TIME)
 #define DAC_ALL_RESOLUTION   (DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION)

@@ -310,7 +310,7 @@ void frame_timer_init(void)
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-    TIM_TimeBaseStructure.TIM_Period = FRAME_TIME - 1;
+    TIM_TimeBaseStructure.TIM_Period = FRAME_TIME_D - 1;
     TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 2 / 1000000 - 1;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
