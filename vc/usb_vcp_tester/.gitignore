@@ -1,0 +1,17 @@
+*.ncb
+*.res
+*.plg
+*.aps
+AppLog.txt
+*.idb
+*.ilk
+*.obj
+*.pch
+*.positions
+*.sbr
+*.chw
+*.pdb
+*.bsc
+*.tlh
+*.tli
+*.opt
