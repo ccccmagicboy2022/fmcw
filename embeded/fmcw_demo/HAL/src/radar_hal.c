@@ -213,7 +213,8 @@ void frequency_calibration2(void)
     
     for (int i = 0; i <= DAC_WORK_RESOLUTION; i++) {
         cycle_freq_diff[i] = (uint16_t)((float)SystemCoreClock / 1000000.0f * FREQ_OUT_DIV * 8 \
-            / (FREQ_MIN + ((float)(FREQ_MAX - FREQ_MIN) / DAC_WORK_RESOLUTION) * i) + 0.5f);
+            / (FREQ_MIN + ((float)(FREQ_MAX - FREQ_MIN) / DAC_WORK_RESOLUTION) * i));
+        printf("{cycle_freq_diff}%d\n", cycle_freq_diff[i]);
     }
     
     while (1) {
@@ -229,7 +230,7 @@ void frequency_calibration2(void)
                     checkout_time++;
                     if (checkout_time > CHECK_TIME) {
                         checkout_time = 0;
-                        vt_tab[freq_calibration_state] = vtune;
+                        vt_tab[freq_calibration_state] = vtune - 112;
                         printf("progress: no.%d\nperiod: %d, frequency: %f, v: %d\n\n", \
                             freq_calibration_state, cycle_all_storage, frequency, vtune);
                         freq_calibration_state += 1;
@@ -256,6 +257,7 @@ void frequency_calibration2(void)
                         }
                     }
                     dac_set_value(vtune);
+                    USB_OTG_BSP_uDelay(2);
                 }
                 cycle_all_ready = 0;
             }

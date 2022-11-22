@@ -271,6 +271,9 @@ void TIM1_UP_TIM10_IRQHandler(void)
 
 void TIM1_CC_IRQHandler(void)
 {
+    static uint8_t i = 0;
+    static uint32_t sum = 0;
+    
     if(TIM_GetITStatus(TIM1, TIM_IT_CC1) == SET)
     {
         if(uhCaptureNumber == 0)
@@ -284,8 +287,16 @@ void TIM1_CC_IRQHandler(void)
             uhCaptureNumber = 0;
             
             /////////////////
-            cycle_all = uhICReadValue;
-            cycle_all_ready = 1;
+            sum += uhICReadValue;
+            i++;
+            
+            if (i%2 == 0)
+            {
+                cycle_all = (uint32_t)(sum / 2.0f + 0.5f);
+                cycle_all_ready = 1;
+                sum = 0;
+            }
+            /////////////////
         }
         TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
     }
