@@ -157,6 +157,31 @@ int get_sample_data(u8 *buf)
     return ret;
 }
 
+void usb_polling_send_data(uint8_t *data, uint32_t lenth)
+{
+    u8 header[2];
+ 
+    header[0] = 0xAB;
+    header[1] = 0xCD;
+    USB_SendData(header, sizeof(header));
+    USB_SendData((u8 *)data, lenth);
+}
+
+void usb_polling_send_fake_data(uint8_t *data, uint32_t lenth)
+{
+    u8 header[2];
+    
+    for (int i=0;i<lenth;i++)
+    {
+        data[i] = i%0x100;
+    }
+ 
+    header[0] = 0xAB;
+    header[1] = 0xCD;
+    USB_SendData(header, sizeof(header));
+    USB_SendData((u8 *)data, lenth);
+}
+
 TESK_ID_TYPEDEF TaskVal = TESK1;
 Task_TYPEDEF TaskState = Task_STATE1;
 TaskCallBack pTaskCBS;

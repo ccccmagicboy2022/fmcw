@@ -28,6 +28,11 @@ static uint16_t uhCaptureNumber = 0;
 uint16_t uhICReadValue;
 extern u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT] __attribute__ ((aligned(4)));
 extern ring_buf_t ring_buffer;
+
+////////////
+extern uint32_t cycle_all_ready;
+extern uint32_t cycle_all;
+////////////
 /** @addtogroup Template_Project
   * @{
   */
@@ -277,6 +282,10 @@ void TIM1_CC_IRQHandler(void)
         {
             uhICReadValue = TIM_GetCapture1(TIM1);
             uhCaptureNumber = 0;
+            
+            /////////////////
+            cycle_all = uhICReadValue;
+            cycle_all_ready = 1;
         }
         TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
     }

@@ -33,6 +33,6 @@ void start_dac_timer(void);
 void stop_dac_timer(void);
 float get_cap_rf_freq_at_khz(void);
 float get_cap_divout2_at_khz(void);
-
+void frequency_calibration2(void);
 
 #endif//_B96F1637_7840_479F_B02D_701B368CF843_

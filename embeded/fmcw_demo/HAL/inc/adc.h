@@ -35,5 +35,7 @@ void init_pins(void);
 void TimerConfig(void);
 void start_adc_timer(void);
 void stop_adc_timer(void);
+void usb_polling_send_data(uint8_t *data, uint32_t lenth);
+void usb_polling_send_fake_data(uint8_t *data, uint32_t lenth);
 
 #endif

@@ -6,6 +6,13 @@ float cap_freq_mean_a[FREQ_CAP_MEAN_NUM];
 extern uint16_t uhICReadValue;
 PidCtrlTypedef pidCtrl;
 
+///////////
+uint16_t cycle_freq_diff[DAC_WORK_RESOLUTION + 1] = {0};
+uint32_t cycle_all, cycle_all_ready = 0;
+uint16_t vtune;
+#define CHECK_TIME 100
+///////////
+
 float get_cap_divout2_at_khz(void)
 {
     return (float)(SystemCoreClock / (uhICReadValue)) * 8.0f / 1000.0f;
@@ -187,11 +194,113 @@ void radar_init(void)
     dac_init();
     LED2_ON;
     CV_LOG("frequency celibration start\n");
+#ifdef FAST_CALC_FREQ
+    frequency_calibration2();
+#else
     frequency_calibration();
+#endif
     LED3_ON;
     dac_secend_init();
     adc_init();
     frame_timer_init();
+}
+
+void frequency_calibration2(void)
+{
+    uint32_t freq_calibration_state = 0;
+    float frequency = 0;
+    uint32_t printf_error_indexa, checkout_time, cycle_all_storage = 0;
+    
+    for (int i = 0; i <= DAC_WORK_RESOLUTION; i++) {
+        cycle_freq_diff[i] = (uint16_t)((float)SystemCoreClock / 1000000.0f * FREQ_OUT_DIV * 8 \
+            / (FREQ_MIN + ((float)(FREQ_MAX - FREQ_MIN) / DAC_WORK_RESOLUTION) * i) + 0.5f);
+    }
+    
+    while (1) {
+        if (freq_calibration_state > DAC_WORK_RESOLUTION) {
+            break;
+        } else {
+            if (cycle_all_ready) {
+                cycle_all_storage = cycle_all;
+                frequency = SystemCoreClock / 1000000.0f / (float)(cycle_all_storage) * 8;
+//                printf("period: %d, frequency: %f, v: %d\n", \
+//                        cycle_all_storage, frequency, vtune);
+                if (cycle_all_storage == cycle_freq_diff[freq_calibration_state]) {
+                    checkout_time++;
+                    if (checkout_time > CHECK_TIME) {
+                        checkout_time = 0;
+                        vt_tab[freq_calibration_state] = vtune;
+                        printf("progress: no.%d\nperiod: %d, frequency: %f, v: %d\n\n", \
+                            freq_calibration_state, cycle_all_storage, frequency, vtune);
+                        freq_calibration_state += 1;
+                    }
+                } else {
+                    if ((cycle_all_storage > cycle_freq_diff[freq_calibration_state] - 2) && \
+                        (cycle_all_storage < cycle_freq_diff[freq_calibration_state] + 2)) {
+                        checkout_time--;
+                    } else {
+                        checkout_time = 0;
+                    }
+                    if ((cycle_all_storage < cycle_freq_diff[freq_calibration_state]) \
+                            && (vtune < 3000)) {
+                        vtune++;
+                    } else if ((cycle_all_storage > cycle_freq_diff[freq_calibration_state]) \
+                            && (vtune > 0)) {
+                        vtune--;
+                    } else if (vtune == 3000 || vtune == 0) {
+                        printf_error_indexa++;
+                        if (printf_error_indexa > 100) {
+                            printf_error_indexa = 0;
+                            printf("RF device error");
+                            while (1) {}
+                        }
+                    }
+                    dac_set_value(vtune);
+                }
+                cycle_all_ready = 0;
+            }
+        }
+    }
+/////////////////////////////////////////////////////////////////////////
+    float target_divout2_start_freq_at_khz = 0.0f;
+    float target_divout2_diff_freq_at_khz = 0.0f;
+    uint16_t dac_raw = 0;
+
+    target_divout2_start_freq_at_khz = FREQ_MIN * 1000.0f / FREQ_OUT_DIV;
+    target_divout2_diff_freq_at_khz = ((float)(FREQ_MAX - FREQ_MIN) * 1000.0f / FREQ_OUT_DIV) / DAC_WORK_RESOLUTION;
+
+    printf("target_divout2_start_freq_at_hz: %.3f KHz\r\n", target_divout2_start_freq_at_khz);
+    printf("target_divout2_diff_freq_at_hz: %.6f KHz\r\n", target_divout2_diff_freq_at_khz);
+
+    for (int i = DAC_WORK_RESOLUTION + 1; i < DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i++)
+    {
+        vt_tab[i] = vt_tab[DAC_WORK_RESOLUTION];
+    }
+
+    for (int i = DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION / 2; i < DAC_ALL_RESOLUTION; i++)
+    {
+        vt_tab[i] = vt_tab[0];
+    }
+
+    //check vt_tab
+    for (int i = 0;i < DAC_ALL_RESOLUTION;i++)
+    {
+        printf("{vt_tab}%d\n", vt_tab[i]);
+    }
+
+//    while(1)
+//    {
+//        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+//        {
+//            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
+//            USB_OTG_BSP_mDelay(1);
+//        }
+//    }
+
+    input_capture_disable();
+    dac_first_deinit();
+    printf("frequency celibration2 finish\n");
+    CV_LOG("frequency celibration2 finish\n");
 }
 
 void frame_timer_init(void)
