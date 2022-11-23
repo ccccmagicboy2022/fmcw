@@ -7,7 +7,7 @@ int32_t main(void)
 {
     init_mem();
     mcu429_init();
-    usb_hs_init();
+    //usb_hs_init();
     uart_init();
     radar_init();
     fpga_init();

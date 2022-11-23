@@ -1,7 +1,29 @@
 #include "radar_hal.h"
 #include "sys.h"
 
-uint16_t vt_tab[DAC_ALL_RESOLUTION];
+uint16_t vt_tab[DAC_ALL_RESOLUTION] = {
+2261,2257,2257,2251,2251,2248,2246,2244,2240,2236,
+2236,2231,2230,2225,2222,2222,2216,2215,2211,2210,
+2207,2208,2204,2201,2199,2195,2192,2192,2190,2185,
+2180,2181,2175,2174,2172,2171,2169,2165,2160,2160,
+2155,2154,2149,2149,2144,2143,2139,2138,2136,2136,
+2133,2128,2123,2125,2121,2119,2117,2112,2106,2106,
+2101,2103,2099,2097,2090,2091,2085,2085,2080,2079,
+2075,2075,2070,2069,2065,2064,2059,2053,2053,2052,
+2049,2043,2043,2037,2038,2037,2032,2030,2029,2021,
+2021,2018,2015,2011,2012,2010,2005,2000,1999,1993,
+1994,1988,1988,1986,1984,1981,1979,1972,1971,1966,
+1966,1961,1961,1956,1957,1955,1950,1947,1944,1938,
+1938,1936,1934,1930,1927,1922,1921,1916,1916,1916,
+1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,
+1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,
+1916,1916,1916,1916,1916,1916,1916,1916,1916,1916,
+2261,2261,2261,2261,2261,2261,2261,2261,2261,2261,
+2261,2261,2261,2261,2261,2261,2261,2261,2261,2261,
+2261,2261,2261,2261,2261,2261,2261,2261,2261,2261,
+2261,2261,
+};
+
 float cap_freq_mean_a[FREQ_CAP_MEAN_NUM];
 extern uint16_t uhICReadValue;
 PidCtrlTypedef pidCtrl;
@@ -15,7 +37,7 @@ uint16_t vtune;
 
 float get_cap_divout2_at_khz(void)
 {
-    return (float)(SystemCoreClock / (uhICReadValue)) * 8.0f / 1000.0f;
+    return (float)(SystemCoreClock / (uhICReadValue)) * 1.0f / 1000.0f;
 }
 
 float get_cap_rf_freq_at_khz(void)
@@ -166,7 +188,6 @@ uint8_t check_once(float target_khz, uint16_t dac_raw_in, uint8_t index)
             printf("{check_freq_diff}%.1lf, %.1lf\n", cap_freq_mean, rf_start_freq_at_khz + index * rf_diff_freq_at_khz);
             break;
         }
-        USB_OTG_BSP_uDelay(2);
     }
 
     return 1;
@@ -212,7 +233,7 @@ void frequency_calibration2(void)
     uint32_t printf_error_indexa, checkout_time, cycle_all_storage = 0;
     
     for (int i = 0; i <= DAC_WORK_RESOLUTION; i++) {
-        cycle_freq_diff[i] = (uint16_t)((float)SystemCoreClock / 1000000.0f * FREQ_OUT_DIV * 8 \
+        cycle_freq_diff[i] = (uint16_t)((float)SystemCoreClock / 1000000.0f * FREQ_OUT_DIV * 1 \
             / (FREQ_MIN + ((float)(FREQ_MAX - FREQ_MIN) / DAC_WORK_RESOLUTION) * i));
         printf("{cycle_freq_diff}%d\n", cycle_freq_diff[i]);
     }
@@ -223,14 +244,14 @@ void frequency_calibration2(void)
         } else {
             if (cycle_all_ready) {
                 cycle_all_storage = cycle_all;
-                frequency = SystemCoreClock / 1000000.0f / (float)(cycle_all_storage) * 8;
+                frequency = SystemCoreClock / 1000000.0f / (float)(cycle_all_storage) * 1;
 //                printf("period: %d, frequency: %f, v: %d\n", \
 //                        cycle_all_storage, frequency, vtune);
                 if (cycle_all_storage == cycle_freq_diff[freq_calibration_state]) {
                     checkout_time++;
                     if (checkout_time > CHECK_TIME) {
                         checkout_time = 0;
-                        vt_tab[freq_calibration_state] = vtune - 112;
+                        vt_tab[freq_calibration_state] = vtune;
                         printf("progress: no.%d\nperiod: %d, frequency: %f, v: %d\n\n", \
                             freq_calibration_state, cycle_all_storage, frequency, vtune);
                         freq_calibration_state += 1;
@@ -257,7 +278,6 @@ void frequency_calibration2(void)
                         }
                     }
                     dac_set_value(vtune);
-                    USB_OTG_BSP_uDelay(2);
                 }
                 cycle_all_ready = 0;
             }
@@ -295,8 +315,8 @@ void frequency_calibration2(void)
 //        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
 //        {
 //            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
-//            USB_OTG_BSP_mDelay(1);
 //        }
+//        USB_OTG_BSP_mDelay(100);
 //    }
 
     input_capture_disable();
@@ -384,7 +404,7 @@ void input_capture_timer_config(void)
     TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
     TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
-    TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV8;
+    TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     TIM_ICInitStructure.TIM_ICFilter = 0;
 
     TIM_ICInit(TIM1, &TIM_ICInitStructure);

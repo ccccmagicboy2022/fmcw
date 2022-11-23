@@ -51,7 +51,7 @@
     #define OK_TIMER_NUM        1
 #endif
 
-#define FREQ_CHECK_MEAN_NUM 1000
+#define FREQ_CHECK_MEAN_NUM  200
 #define SAMPLE_NUM_PER_CHIRP 128
 #define NUM_CHIRPS_PER_FRAME  16
 #define DAC_WORK_RESOLUTION  128
