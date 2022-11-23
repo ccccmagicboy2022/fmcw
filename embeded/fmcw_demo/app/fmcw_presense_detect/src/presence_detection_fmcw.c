@@ -126,6 +126,7 @@ void detect(s16 *data, output_result_t_fmcw *output_result)
 
     if (ret) {
         detect_presence();
+        *output_result = presence_flag;
     }
 }
 

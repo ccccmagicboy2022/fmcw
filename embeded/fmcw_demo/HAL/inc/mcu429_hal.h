@@ -11,6 +11,9 @@
 #define LED3_OFF GPIO_SetBits(GPIOE, GPIO_Pin_14)
 #define LED3_ON GPIO_ResetBits(GPIOE, GPIO_Pin_14)
 
+#define GPIO_O_HIGH GPIO_SetBits(GPIOD, GPIO_Pin_0)
+#define GPIO_O_LOW  GPIO_ResetBits(GPIOD, GPIO_Pin_0)
+
 void mcu429_init(void);
 void led_init(void);
 

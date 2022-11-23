@@ -67,11 +67,12 @@ typedef struct{
     float                 out;
 }PidCtrlTypedef;
 
-#define CV_LOG(fmt, ...) \
-do \
-{ \
-        SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__); \
-}while(0)
+#define CV_LOG(fmt, ...)
+//#define CV_LOG(fmt, ...) \
+//do \
+//{ \
+//        SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__); \
+//}while(0)
 
 // Report related parameters
 typedef struct

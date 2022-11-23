@@ -216,7 +216,7 @@ void radar_init(void)
     LED2_ON;
     CV_LOG("frequency celibration start\n");
 #ifdef FAST_CALC_FREQ
-    frequency_calibration2();
+    //frequency_calibration2();
 #else
     frequency_calibration();
 #endif
