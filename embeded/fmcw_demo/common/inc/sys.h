@@ -57,7 +57,7 @@
 #define DAC_WORK_RESOLUTION  128
 #define CHIRP_WORK_TIME      400    // us
 #define CHIRP_IDLE_TIME      200    // us
-#define FRAME_TIME_D           (40 * 1000)  // us
+#define FRAME_TIME_D           (39600)  // us
 
 #define DAC_IDEL_RESOLUTION  (DAC_WORK_RESOLUTION * CHIRP_IDLE_TIME / CHIRP_WORK_TIME)
 #define DAC_ALL_RESOLUTION   (DAC_WORK_RESOLUTION + DAC_IDEL_RESOLUTION)
@@ -67,12 +67,12 @@ typedef struct{
     float                 out;
 }PidCtrlTypedef;
 
-#define CV_LOG(fmt, ...)
-//#define CV_LOG(fmt, ...) \
-//do \
-//{ \
-//        SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__); \
-//}while(0)
+//#define CV_LOG(fmt, ...)
+#define CV_LOG(fmt, ...) \
+do \
+{ \
+        SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__); \
+}while(0)
 
 // Report related parameters
 typedef struct

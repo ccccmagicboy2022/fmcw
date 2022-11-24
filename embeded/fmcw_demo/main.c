@@ -9,14 +9,14 @@ int32_t main(void)
 {
     init_mem();
     mcu429_init();
-    //usb_hs_init();
     
+    usb_hs_init();
     matlab_debug_use_flag = 0;
     while(matlab_debug_use_flag == 1)
     {
         //pass
     }
-    
+
     uart_init();
     radar_init();
     fpga_init();
@@ -39,12 +39,12 @@ __attribute__ ((weak)) int detect_presense(s16 *data)
 #ifndef FAKE_USB_DATA
     usb_polling_send_data((u8 *)data, sizeof(data_buf));
 #else
-     usb_polling_send_fake_data((u8 *)data, sizeof(data_buf));
+    usb_polling_send_fake_data((u8 *)data, sizeof(data_buf));
 #endif
 
     detect(data, &fmcw_result);
     printf("%d\r\n", fmcw_result);
-    
+
     if (fmcw_result)
     {
         GPIO_O_HIGH;
