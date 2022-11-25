@@ -35,21 +35,11 @@
 #define FREQ_MAX 24225  // MHz
 #define FREQ_OUT_DIV         (65536 * 16)
 
-#ifndef QUICK_CALC_FREQ
-    #define FREQ_CAP_MEAN_NUM   150
-    #define ERR_LIMIT           (0.0015f)
-    #define KP                  (-1.56f)
-    #define KI                  (-0.03f)
-    #define KD                  (0.6f)
-    #define OK_TIMER_NUM        2
-#else
-    #define FREQ_CAP_MEAN_NUM   80
-    #define ERR_LIMIT           (0.005f)
-    #define KP                  (-1.56f)
-    #define KI                  (-0.03f)
-    #define KD                  (0.6f)
-    #define OK_TIMER_NUM        1
-#endif
+#define ERR_LIMIT           (0.0015f)       //KHz
+#define KP                  (-0.001f)
+#define KI                  (-0.001f)
+#define KD                  (0.001f)
+#define OK_TIMER_NUM        1
 
 #define FREQ_CHECK_MEAN_NUM  200
 #define SAMPLE_NUM_PER_CHIRP 128

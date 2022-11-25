@@ -24,7 +24,7 @@ uint16_t vt_tab[DAC_ALL_RESOLUTION] = {
 2261,2261,
 };
 
-float cap_freq_mean_a[FREQ_CAP_MEAN_NUM];
+float cap_freq_mean_a[FREQ_CHECK_MEAN_NUM];
 extern uint16_t uhICReadValue;
 PidCtrlTypedef pidCtrl;
 
@@ -57,18 +57,13 @@ void pidInit()
 
 uint8_t cal_once(float target_khz, uint16_t * dac_raw)
 {
-    float cap_freq_mean = 0.0f;
-    int16_t ii = 0;
     uint8_t res = 0;
 
     while (1)
     {
-        cap_freq_mean_a[((ii++)%FREQ_CAP_MEAN_NUM)] = get_cap_divout2_at_khz();
-        arm_mean_f32(cap_freq_mean_a, FREQ_CAP_MEAN_NUM, &cap_freq_mean);
-        if (ii%FREQ_CAP_MEAN_NUM == 0)
+        if (cycle_all_ready)
         {
-            //printf("{cap}%.3lf\n{dac}%d\n", cap_freq_mean, dac_get_value());
-            res = pidExecu(target_khz, cap_freq_mean);
+            res = pidExecu(target_khz, get_cap_divout2_at_khz());
             if (res)
             {
                 break;
@@ -92,7 +87,6 @@ uint8_t pidExecu(float target_khz, float cap_khz)
     {
         pidCtrl.out = arm_pid_f32(&pidCtrl.S, pidErr);
         dac_set_vol(pidCtrl.out);
-        USB_OTG_BSP_uDelay(2);
         ok_timer = 0;
     }
     else
@@ -152,13 +146,13 @@ void frequency_calibration(void)
     }
 
     //while(1)
-//    {
-//        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
-//        {
-//            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
-//            USB_OTG_BSP_mDelay(1);
-//        }
-//    }
+    {
+        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+        {
+            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
+        }
+        USB_OTG_BSP_mDelay(100);
+    }
 
     input_capture_disable();
     dac_first_deinit();
@@ -215,10 +209,10 @@ void radar_init(void)
     dac_init();
     LED2_ON;
     CV_LOG("frequency celibration start\n");
-#ifdef FAST_CALC_FREQ
+#ifndef PID_CALC_FREQ
     //frequency_calibration2();
 #else
-    frequency_calibration();
+    //frequency_calibration();
 #endif
     LED3_ON;
     dac_secend_init();
@@ -310,14 +304,14 @@ void frequency_calibration2(void)
         printf("{vt_tab}%d\n", vt_tab[i]);
     }
 
-//    while(1)
-//    {
-//        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
-//        {
-//            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
-//        }
-//        USB_OTG_BSP_mDelay(100);
-//    }
+    //while(1)
+    {
+        for (int i = 0; i <= DAC_WORK_RESOLUTION; i++)
+        {
+            check_once(target_divout2_start_freq_at_khz + i * target_divout2_diff_freq_at_khz, vt_tab[i], i);
+        }
+        USB_OTG_BSP_mDelay(100);
+    }
 
     input_capture_disable();
     dac_first_deinit();
