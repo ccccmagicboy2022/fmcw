@@ -282,19 +282,19 @@ void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE * pdev)
 #else                           /* defined (USE_STM3210C_EVAL) */
     /* This value is set for SYSCLK = 72 MHZ, User can adjust this value
      * depending on used SYSCLK frequency */
-#define count_us   200
+#define count_us   123
 #endif
 void USB_OTG_BSP_uDelay(const uint32_t usec)
 {
-  uint32_t count = count_us * usec;
-  do
-  {
-    if (--count == 0)
+    __IO uint32_t uCount = 0;
+    const uint32_t uTime = (uint32_t)count_us * usec / 7;
+    while (1)
     {
-      return;
+      if (++uCount > uTime)
+      {
+        return;
+      }
     }
-  }
-  while (1);
 }
 
 
