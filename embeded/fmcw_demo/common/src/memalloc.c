@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <sys.h>
 
 /* the size of chunk in MEMALLOC_DYNAMIC */
 #define CHUNK_SIZE                    (1024)
@@ -72,6 +72,10 @@ void* alloc_mem(uint32_t size)
     PRINT_LOG(LOG_LEVEL_DEBUG, "alloc: %d\n", total);
 #endif
 
+#ifdef HEAP_TEST
+    printf("alloc: %d\r", total);
+#endif
+
     if (addr == 0) {
         while (1) {}
 #ifdef UNIT_TEST
@@ -97,6 +101,10 @@ void free_mem(void   * addr)
 
 #ifdef UNIT_TEST
     PRINT_LOG(LOG_LEVEL_DEBUG, "free: %d\n", total);
+#endif
+
+#ifdef HEAP_TEST
+    printf("free: %d\r", total);
 #endif
 }
 

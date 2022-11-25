@@ -225,13 +225,13 @@ void frequency_calibration2(void)
     uint32_t freq_calibration_state = 0;
     float frequency = 0;
     uint32_t printf_error_indexa, checkout_time, cycle_all_storage = 0;
-    
+
     for (int i = 0; i <= DAC_WORK_RESOLUTION; i++) {
         cycle_freq_diff[i] = (uint16_t)((float)SystemCoreClock / 1000000.0f * FREQ_OUT_DIV * 1 \
             / (FREQ_MIN + ((float)(FREQ_MAX - FREQ_MIN) / DAC_WORK_RESOLUTION) * i));
         printf("{cycle_freq_diff}%d\n", cycle_freq_diff[i]);
     }
-    
+
     while (1) {
         if (freq_calibration_state > DAC_WORK_RESOLUTION) {
             break;

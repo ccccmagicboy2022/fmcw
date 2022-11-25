@@ -8,28 +8,28 @@
 #include "functions.h"
 
 int frame_index = 0, respiration_judge_index = 0;
-float respiration_data_matrix[ARRAY_LENGTH_MAX][ARRAY_LENGTH_THIRTY_TWO];
-float background_data_matrix[ARRAY_LENGTH_SIXTEEN][ARRAY_LENGTH_TWENTY_FIVE];
-float tracking_data_matrix[ARRAY_LENGTH_FOUR][ARRAY_LENGTH_SIXTEEN][ARRAY_LENGTH_TWENTY_FIVE];
-int respiration_judge_matrix[ARRAY_LENGTH_FOUR][ARRAY_LENGTH_SIXTEEN];
-s16 frame_data[ARRAY_LENGTH_SIXTEEN][ARRAY_LENGTH_MAX];
+float respiration_data_matrix[RESPIRATION_PROCESS_NUM][R_NUM * 2];
+float background_data_matrix[R_NUM][V_NUM];
+float tracking_data_matrix[TRACKING_WIN_NUM][R_NUM][V_NUM];
+int respiration_judge_matrix[RESPIRATION_TOTAL_TIMES][RESPIRATION_LOCS_NUM];
+s16 frame_data[CHIRPS_PER_FRAME][SAMPLES_PER_CHIRP];
 s16 data_ready = 0, presence_flag = 0, respiration_judge_flag = 0;
 
 int preprocess_fmcw(s16 *data) {
     int len, ret;
     float *v_fft_tar_abs;
 
-    len = ARRAY_LENGTH_SIXTEEN * ARRAY_LENGTH_TWENTY_FIVE;
+    len = R_NUM * V_NUM;
     v_fft_tar_abs = alloc_mem(len * sizeof(float));
 
     memmove((void *)respiration_data_matrix, (void *)respiration_data_matrix[1],
-            (ARRAY_LENGTH_MAX - 1) * ARRAY_LENGTH_THIRTY_TWO * (sizeof(float)));
+            (RESPIRATION_PROCESS_NUM - 1) * R_NUM * 2 * (sizeof(float)));
 
-    td_fft((void *)data, respiration_data_matrix[ARRAY_LENGTH_MAX - 1], (void *)v_fft_tar_abs);
+    td_fft((void *)data, respiration_data_matrix[RESPIRATION_PROCESS_NUM - 1], (void *)v_fft_tar_abs);
 
     memmove((void *)tracking_data_matrix, (void *)tracking_data_matrix[1],
-            len * (ARRAY_LENGTH_FOUR - 1) * (sizeof(float)));
-    memcpy((void *)tracking_data_matrix[ARRAY_LENGTH_FOUR - 1],
+            len * (TRACKING_WIN_NUM - 1) * (sizeof(float)));
+    memcpy((void *)tracking_data_matrix[TRACKING_WIN_NUM - 1],
             v_fft_tar_abs, len * sizeof(float));
 
     frame_index += 1;
@@ -57,7 +57,7 @@ void detect_presence(void) {
     int respiration_state, *respiration_locs;
     s16 max_data;
 
-    difference_matrix = alloc_mem(ARRAY_LENGTH_SIXTEEN * ARRAY_LENGTH_TWENTY_FIVE * sizeof(float));
+    difference_matrix = alloc_mem(R_NUM * V_NUM * sizeof(float));
 
     if (frame_index % TRACKING_STEP_PROCESS_NUM == 0) {
         background_update(tracking_data_matrix, background_data_matrix, (void *)difference_matrix);
@@ -71,13 +71,17 @@ void detect_presence(void) {
     }
     free_mem(difference_matrix);
 
+#ifdef HEAP_TEST
+    presence_flag = 1;
+#endif
+
     if (presence_flag == 1 && frame_index == RESPIRATION_STEP_PROCESS_NUM) {
-        respiration_locs = alloc_mem(ARRAY_LENGTH_SIXTEEN * sizeof(int));
+        respiration_locs = alloc_mem(RESPIRATION_LOCS_NUM * sizeof(int));
 
         respiration_state = respiration_detection(respiration_data_matrix, respiration_locs);
 
         memcpy(respiration_judge_matrix[respiration_judge_index],
-             respiration_locs, ARRAY_LENGTH_SIXTEEN * sizeof(int));
+             respiration_locs, RESPIRATION_LOCS_NUM * sizeof(int));
 
         respiration_judge_index += 1;
 
@@ -102,19 +106,19 @@ void detect_presence(void) {
     }
 }
 
-s16 get_max(int data[ARRAY_LENGTH_FOUR][ARRAY_LENGTH_SIXTEEN]) {
-    s16 sum_data[ARRAY_LENGTH_SIXTEEN], output, sum;
+s16 get_max(int data[RESPIRATION_TOTAL_TIMES][RESPIRATION_LOCS_NUM]) {
+    s16 sum_data[RESPIRATION_LOCS_NUM], output, sum;
     u32 p;
     int i, j;
 
-    for (i = 0; i < ARRAY_LENGTH_SIXTEEN; i++) {
+    for (i = 0; i < RESPIRATION_LOCS_NUM; i++) {
         sum = 0;
-        for (j = 0; j < ARRAY_LENGTH_FOUR; j++)
+        for (j = 0; j < RESPIRATION_TOTAL_TIMES; j++)
             sum += data[j][i];
         sum_data[i] = sum;
     }
 
-    arm_max_q15(sum_data, ARRAY_LENGTH_SIXTEEN, &output, &p);
+    arm_max_q15(sum_data, RESPIRATION_LOCS_NUM, &output, &p);
 
     return output;
 }

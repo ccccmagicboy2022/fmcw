@@ -162,14 +162,14 @@ void SysTick_Handler(void)
 void DMA1_Stream5_IRQHandler(void)
 {
     static uint8_t chirp_index = 0;
-    
+
     if(DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5))
     {
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
     }
-    
+
     if(DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5))
-    {        
+    {
         if (NUM_CHIRPS_PER_FRAME == chirp_index++%(NUM_CHIRPS_PER_FRAME + 1))
         {
             stop_dac_timer();
@@ -180,7 +180,7 @@ void DMA1_Stream5_IRQHandler(void)
             start_adc_timer();
         }
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-    }    
+    }
 }
 
 void DMA2_Stream0_IRQHandler(void)
@@ -188,36 +188,36 @@ void DMA2_Stream0_IRQHandler(void)
     static uint8_t i = 1;
     static uint8_t j = 0;
     u32 current_address = 0;
-    
+
     if(DMA_GetITStatus(DMA2_Stream0, DMA_IT_HTIF0))
     {
         DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_HTIF0);
     }
-    
+
     if(DMA_GetITStatus(DMA2_Stream0, DMA_IT_TCIF0))
     {
         stop_adc_timer();
-        
+
         DMA_Cmd(DMA2_Stream0, DISABLE);
-        
+
         if (0 == i%(NUM_CHIRPS_PER_FRAME))
         {
             j++;
         }
-        
+
         DMA2_Stream0->M0AR = (uint32_t)(&buffer[(i++%NUM_CHIRPS_PER_FRAME) * SAMPLE_NUM_PER_CHIRP \
                                         + ((j%ELEMENT_COUNT) * NUM_CHIRPS_PER_FRAME * SAMPLE_NUM_PER_CHIRP)]);
         DMA_Cmd(DMA2_Stream0, ENABLE);
-        
+
         DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
-        
+
         if (1 == i%(NUM_CHIRPS_PER_FRAME))
         {
             ring_buffer_put(&ring_buffer);
         }
-        
+
         current_address = DMA2_Stream0->M0AR;
-    }    
+    }
 }
 
 void TIM5_IRQHandler(void)
@@ -270,7 +270,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
 }
 
 void TIM1_CC_IRQHandler(void)
-{   
+{
     if(TIM_GetITStatus(TIM1, TIM_IT_CC1) == SET)
     {
         if(uhCaptureNumber == 0)

@@ -27,9 +27,15 @@ uint8_t usb_ok_flag;
 
 void wait_usb_init_ok(void)
 {
+    uint16_t cyc = 0;
     while(get_usb_ok() == 0)
     {
-        //pass
+        USB_OTG_BSP_mDelay(100);
+        cyc++;
+        if (cyc == 30)
+        {
+            break;
+        }
     }
     LED1_ON;
 }

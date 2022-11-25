@@ -5,7 +5,7 @@ __ALIGN_BEGIN USB_OTG_CORE_HANDLE USB_OTG_dev __ALIGN_END;
 
 void usb_hs_init(void)
 {
-    usb_hs_phy_gpio_init();
+    //usb_hs_phy_gpio_init();
 
     USBD_Init(
     &USB_OTG_dev,

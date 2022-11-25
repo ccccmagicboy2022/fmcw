@@ -7,9 +7,6 @@ uint8_t matlab_debug_use_flag;
 
 int32_t main(void)
 {
-    init_mem();
-    mcu429_init();
-    
     usb_hs_init();
     matlab_debug_use_flag = 0;
     while(matlab_debug_use_flag == 1)
@@ -17,6 +14,8 @@ int32_t main(void)
         //pass
     }
 
+    init_mem();
+    mcu429_init();
     uart_init();
     radar_init();
     fpga_init();
@@ -36,14 +35,14 @@ __attribute__ ((weak)) int detect_presense(s16 *data)
 {
     output_result_t_fmcw fmcw_result;
 
-#ifndef FAKE_USB_DATA
-    usb_polling_send_data((u8 *)data, sizeof(data_buf));
+#ifdef SEND_TO_MATLAB_TEST
+    #ifndef FAKE_USB_DATA
+        usb_polling_send_data((u8 *)data, sizeof(data_buf));
+    #else
+        usb_polling_send_fake_data((u8 *)data, sizeof(data_buf));
+    #endif
 #else
-    usb_polling_send_fake_data((u8 *)data, sizeof(data_buf));
-#endif
-
     detect(data, &fmcw_result);
-    printf("%d\r\n", fmcw_result);
 
     if (fmcw_result)
     {
@@ -55,6 +54,7 @@ __attribute__ ((weak)) int detect_presense(s16 *data)
         GPIO_O_LOW;
         LED3_OFF;
     }
+#endif
 
     return 0;
 }

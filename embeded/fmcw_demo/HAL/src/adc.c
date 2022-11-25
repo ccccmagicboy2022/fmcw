@@ -2,10 +2,6 @@
 #include "ringbuffer.h"
 #include "sys.h"
 
-#ifdef SEND_TO_MATLAB_TEST
-#include "test_usart.h"
-#endif
-
 u16 buffer[ELEMENT_SIZE / 2 * ELEMENT_COUNT] __attribute__ ((aligned(4)));
 
 ring_buf_t ring_buffer = {
@@ -150,7 +146,7 @@ int get_sample_data(u8 *buf)
 {
     int ret;
 #ifdef SEND_TO_MATLAB_TEST
-    usart_polling_send_data((uint8_t *)ring_buffer.buf + ring_buffer.rd * ring_buffer.elem_size, ELEMENT_SIZE);
+    //usart_polling_send_data((uint8_t *)ring_buffer.buf + ring_buffer.rd * ring_buffer.elem_size, ELEMENT_SIZE);
 #endif
     ret = ring_buffer_get(&ring_buffer, buf);
 
@@ -160,7 +156,7 @@ int get_sample_data(u8 *buf)
 void usb_polling_send_data(uint8_t *data, uint32_t lenth)
 {
     u8 header[2];
- 
+
     header[0] = 0xAB;
     header[1] = 0xCD;
     USB_SendData(header, sizeof(header));
@@ -170,12 +166,12 @@ void usb_polling_send_data(uint8_t *data, uint32_t lenth)
 void usb_polling_send_fake_data(uint8_t *data, uint32_t lenth)
 {
     u8 header[2];
-    
+
     for (int i=0;i<lenth;i++)
     {
         data[i] = i%0x100;
     }
- 
+
     header[0] = 0xAB;
     header[1] = 0xCD;
     USB_SendData(header, sizeof(header));

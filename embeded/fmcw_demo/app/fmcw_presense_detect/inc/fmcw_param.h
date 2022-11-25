@@ -50,11 +50,7 @@
 #define FS_DOP                              (1 / PRT)
 #define VBIN                                (LAMDA / 2 * (FS_DOP / V_FFT_NUM))
 
-#define ARRAY_LENGTH_FOUR                   (4)
-#define ARRAY_LENGTH_SIXTEEN                (16)
-#define ARRAY_LENGTH_TWENTY_FIVE            (25)
-#define ARRAY_LENGTH_THIRTY_TWO             (ARRAY_LENGTH_SIXTEEN * 2)
-#define ARRAY_LENGTH_MAX                    (128)
+#define RESPIRATION_LOCS_NUM                (16)
 
 #define TRACKING_WIN_NUM                    (4)
 #define R_MAX_INDEX                         (16)
