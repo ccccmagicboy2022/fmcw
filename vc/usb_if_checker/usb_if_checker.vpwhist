@@ -1,0 +1,25 @@
+[Global]
+CurrentProject=usb_if_checker.vpj
+[ActiveConfig]
+usb_if_checker.vpj=,CFG=usb_if_checker - Win32 Debug
+[ProjectDates]
+usb_if_checker.dsp=20091225134630666
+[TreeExpansion2]
+- usb_if_checker.dsp
+  - Source Files
+  - Header Files
+  - Resource Files
+scroll:0
+[State]
+SCREEN: 1280 800 100 100 960 518 0 0 M 0 0 0 0 998 402 0
+CWD: ..\usb_if_checker
+BUFFER: BN="usb_if_checker.cpp"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=0 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C/C++	HM=0 MF=864 TL=0 MLL=0 ASE=0 LNL=1 LCF=0 CAPS=0 E=0 ESBU2=-1 CL="" SC="" SCE= SCU=
+VIEW: LN=.0 CL=1 LE=0 CX=1 CY=2 WI=5 BI=23 HT=0 HN=0 HF=0 HC=4
+WINDOW: 0 0 738 310 -1 -1 M  WF=0 WT=2 ",,,"
+BUFFER: BN="usb_if_checker.cpp"
+VIEW: LN=.169 CL=2 LE=0 CX=2 CY=12 WI=180 BI=23 HT=0 HN=0 HF=0 HC=4
+FILEHIST: 1
+usb_if_checker.cpp
+PROJECT_CACHE: 0
+TBCLASS: 0 0

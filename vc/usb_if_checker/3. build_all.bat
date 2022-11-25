@@ -1,0 +1,1 @@
+MSDEV.EXE usb_if_checker.dsw /make "all - all" /out build_result.txt
