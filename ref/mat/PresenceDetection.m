@@ -3,14 +3,14 @@ clearvars
 clear
 clc
 
-DAQ_MODE = 2; % Data acquisition mode: 1 Simulation data / 2 Measured record data / 3 Serial port
+DAQ_MODE = 3; % Data acquisition mode: 1 Simulation data / 2 Measured record data / 3 Serial port
 switch DAQ_MODE
-	case 1
-	case 2
+    case 1
+    case 2
         [filename, pathname] = uigetfile('*.mat');
         FileName = strcat(pathname, filename);
         load(FileName)
-		% Explain para for algo
+        % Explain para for algo
         FMCWData = real(RecvSigData);
         FmcwPara.fc = FmcwDataExplain.fc* 1.0e-9; % Center frequency / GHz
         FmcwPara.BW = FmcwDataExplain.BandWidthw* 1.0e-6; % Bandwidth / MHz
@@ -21,7 +21,29 @@ switch DAQ_MODE
         FmcwPara.numSamplesPerChirp = size(FMCWData, 1); % Number of fast time dimension samples
         FmcwPara.numChirpsPerFrame = size(FMCWData, 2); % Number of Chirps per Frame
         numFrames = size(FMCWData, 3); % Number of frames
-	case 3
+    case 3
+        [filename, pathname] = uigetfile('*.mat');
+        FileName = strcat(pathname, filename);
+        load(FileName)
+        % Explain para for algo
+        FMCWData = real(RecvSigData);
+        FmcwPara.fc = FmcwDataExplain.fc* 1.0e-9; % Center frequency / GHz
+        FmcwPara.BW = FmcwDataExplain.BandWidthw* 1.0e-6; % Bandwidth / MHz
+        FmcwPara.PW  = FmcwDataExplain.Ramp_end_time; % Pulse width / s
+        FmcwPara.PRT  = FmcwDataExplain.Chirp_cycle_time; % Pulse repetition period / s
+        FmcwPara.IFFs = FmcwDataExplain.Sample_rate; % Intermediate frequency sampling rate / Hz
+        FmcwPara.FrameTime = FmcwDataExplain.Frame_cycle_time; % Frame duration / s
+        FmcwPara.numSamplesPerChirp = size(FMCWData, 1); % Number of fast time dimension samples
+        FmcwPara.numChirpsPerFrame = size(FMCWData, 2); % Number of Chirps per Frame
+        numFrames = size(FMCWData, 3); % Number of frames
+        % 关闭并删除已占用端口
+        if ~isempty(instrfind)
+            fclose(instrfind);
+            delete(instrfind);
+        end
+        % 端口配置
+        s = serialport('com5', 512000); % 创建串行端口对象
+        s.Timeout = 300; % 300秒未读到串口数据报错
 end
 
 %% Operate para
@@ -89,7 +111,20 @@ while(1)
 		case 2
 			frame_data = FMCWData(:, :, frame_index_local);
 			frame_index_local = frame_index_local + 1;
-		case 3
+        case 3
+            while(1)
+                check_head = read(s, 1, 'uint8');
+                while check_head ~= 171
+                    check_head = read(s, 1, 'uint8');
+                end
+                check_head = read(s, 1, 'uint8');
+                if check_head == 205
+                    break
+                end
+            end
+            frame_data = read(s, 16 * 128, 'uint16');
+            frame_data = reshape(frame_data,128,16);
+            
 	end
 	[r_fft_tar, v_fft_tar_abs] = tdfft(frame_data, r_fft_num, r_min_index, r_max_index, v_fft_num, v_min_index, v_max_index);
 	tracking_data_matrix(:, :, 1: end- 1) = tracking_data_matrix(:, :, 2: end);
