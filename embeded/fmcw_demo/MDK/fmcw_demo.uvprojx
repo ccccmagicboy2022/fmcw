@@ -206,7 +206,7 @@
             <Ro2Chk>0</Ro2Chk>
             <Ro3Chk>0</Ro3Chk>
             <Ir1Chk>1</Ir1Chk>
-            <Ir2Chk>0</Ir2Chk>
+            <Ir2Chk>1</Ir2Chk>
             <Ra1Chk>0</Ra1Chk>
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
@@ -276,12 +276,12 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x80000</Size>
+                <Size>0xc000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
-                <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <StartAddress>0x8010000</StartAddress>
+                <Size>0x70000</Size>
               </OCR_RVCT5>
               <OCR_RVCT6>
                 <Type>0</Type>
@@ -896,6 +896,16 @@
               <FileType>1</FileType>
               <FilePath>..\HAL\src\adc.c</FilePath>
             </File>
+            <File>
+              <FileName>flash_def.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HAL\flash\flash_def.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HAL\src\timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -920,6 +930,11 @@
               <FileName>system.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HAL\mcu_sdk\system.c</FilePath>
+            </File>
+            <File>
+              <FileName>crc32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\common\src\crc32.c</FilePath>
             </File>
           </Files>
         </Group>

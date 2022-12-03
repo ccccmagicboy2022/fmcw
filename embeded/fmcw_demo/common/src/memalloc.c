@@ -2,7 +2,7 @@
 
 /* the size of chunk in MEMALLOC_DYNAMIC */
 #define CHUNK_SIZE                    (1024)
-#define ALLOC_SIZE                    (6 * 1024)
+#define ALLOC_SIZE                    (60 * 1024)
 #define CHUNK_NUM                     (ALLOC_SIZE / CHUNK_SIZE)
 
 typedef struct {

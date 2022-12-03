@@ -123,6 +123,10 @@ MCU self-processing:
 // note:
 #define DPID_PIR_DELAY                  102
 
+// Range line
+// note:
+#define DPID_RANGE_LINE                  103
+
 // Loading preset parameters (delivered or reported)
 // note:
 #define DPID_ENTRANCE_PARAMETER         104
@@ -216,6 +220,12 @@ MCU self-processing:
 // Test data (report only)
 // note:
 #define DPID_UPLOAD_TESTDATA            0xB1
+
+// Teacking check finished (report only)
+#define DPID_TEACKING_CHECK             0x72
+
+// Respiration check finished (report only)
+#define DPID_RESPIRATION_CHECK          0x73
 
 
 extern void soft_reset_mcu(void);

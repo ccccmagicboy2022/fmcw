@@ -11,6 +11,7 @@ void mcu429_init(void)
     clk_test();
 
     led_init();
+    Timer4Config();
 }
 
 void led_init(void)

@@ -33,6 +33,8 @@ extern ring_buf_t ring_buffer;
 extern uint32_t cycle_all_ready;
 extern uint32_t cycle_all;
 ////////////
+volatile uint32_t counter4;
+
 /** @addtogroup Template_Project
   * @{
   */
@@ -288,6 +290,15 @@ void TIM1_CC_IRQHandler(void)
             /////////////////
         }
         TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
+    }
+}
+
+void TIM4_IRQHandler(void)
+{
+    if(TIM_GetITStatus(TIM4, TIM_IT_Update))
+    {
+        TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+        counter4++;
     }
 }
 

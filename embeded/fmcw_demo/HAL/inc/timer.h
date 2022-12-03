@@ -1,10 +1,12 @@
-#ifndef __MYTIMER_H
-#define __MYTIMER_H
+#ifndef _AF84CB73_44B1_4AB0_90EA_1ACBEA532C39_
+#define _AF84CB73_44B1_4AB0_90EA_1ACBEA532C39_
 
-/* Define Timer Unit for example */
-void TimerConfig(void);
-void Timer01_Config(void);
-void systick_init(void);
-unsigned int SysTick_GetTick(void);
+#include "sys.h"
 
-#endif
+void Timer4Config(void);
+void init_timer4(void);
+void start_timer4(void);
+void set_c4_start(void);
+uint32_t get_c4_ms(void);
+
+#endif//_AF84CB73_44B1_4AB0_90EA_1ACBEA532C39_

@@ -16,6 +16,7 @@
 #include "SEGGER_RTT.h"
 #include "sysclk.h"
 #include "adc.h"
+#include "timer.h"
 
 #include "usb_core.h"
 #include "usb_conf.h"
@@ -26,7 +27,11 @@
 #include "usb_bsp.h"
 #include "usbd_cdc_vcp.h"
 
+#include "fmcw_param.h"
+#include "memalloc.h"
 #include "presence_detection_fmcw.h"
+#include "crc32.h"
+#include "flash_def.h"
 
 #define SEGGER_RTT_IN_RAM   1
 

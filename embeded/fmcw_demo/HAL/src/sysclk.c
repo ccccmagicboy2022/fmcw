@@ -30,6 +30,9 @@ void SysClkInit(void)
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
     //spi3
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
+
+    //timer4
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 }
 
 

@@ -1,6 +1,7 @@
 #ifndef __FMCW_PARAM_H__
 #define __FMCW_PARAM_H__
 
+
 /* FMCW param */
 #define FC                                  (24.025f)           /* GHz */
 #define BW                                  (200U)              /* MHz */
@@ -21,13 +22,13 @@
 #define BACKGROUND_WIN_TIME                 (2.5344f)
 #define TRACKING_WIN_TIME                   (0.1584f)
 #define TRACKING_STEP_TIME                  (0.0792f)
-#define RANGE_LINE                          (4.0f)
+#define RANGE_LINE                          (5.0f)
 #define RESPIRATION_WIN_TIME                (5.0688f)
 #define RESPIRATION_STEP_TIME               (2.5344f)
 //#define NOISE_COEFFICIENT                   (1)
 #define NOISE_UPDATE_WEIGHT                 (0.1f)
 //#define DIFF_ENERGY_LINE                    (0.5f)
-#define BACKGROUND_LINE                     (70)
+#define BACKGROUND_LINE                     (40)
 #define RESPIRATION_TOTAL_TIMES             (4)
 #define RESPIRATION_EFFECTIVE_TIMES         (2)
 
@@ -59,5 +60,15 @@
 #define V_MAX_INDEX                         (44)
 #define V_MIN_INDEX                         (20)
 #define V_NUM                               (V_MAX_INDEX - V_MIN_INDEX + 1)
+
+/* respiration check */
+#define RESPIRATION_CHECK_TIMES             (20U)
+#define RESPIRATION_CHECK_WEIGHT            (1.2f)
+
+/* tracking check */
+#define TACKING_CHECK_TIMES                 (300U)
+#define TACKING_CHECK_WEIGHT                (1.2f)
+
+#define DELAY_TIME                          (10U)
 
 #endif

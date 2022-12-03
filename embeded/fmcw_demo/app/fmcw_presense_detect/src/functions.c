@@ -80,9 +80,9 @@ void td_fft(const uint16_t frame_data[COL_LEN][ROW_LEN], float *rfft_tar_sum, fl
     free_mem(r_fft_tar);
 }
 
-#define DIFF_ENERGY_LINE 0.5f
-#define NOISE_COEFFICIENT 1.0f
-#define BACKGROUND_UPDATE_WEIGHT 0.1f
+#define DIFF_ENERGY_LINE 0.75f
+#define NOISE_COEFFICIENT 0.2f
+#define BACKGROUND_UPDATE_WEIGHT 0.01f
 
 void background_update(float data[TRACKING_WIN_NUM][R_NUM][V_NUM], float background_data_matrix[R_NUM][V_NUM], float difference_matrix[R_NUM][V_NUM])
 {
@@ -97,8 +97,7 @@ void background_update(float data[TRACKING_WIN_NUM][R_NUM][V_NUM], float backgro
             }
             temp = temp / TRACKING_WIN_NUM;
             difference_matrix[i][j] = temp - background_data_matrix[i][j];
-            if (difference_matrix[i][j] < background_data_matrix[i][j] * NOISE_COEFFICIENT && \
-                difference_matrix[i][j] > -background_data_matrix[i][j] * NOISE_COEFFICIENT) {
+            if (difference_matrix[i][j] < background_data_matrix[i][j] * NOISE_COEFFICIENT) {
                 background_data_matrix[i][j] = background_data_matrix[i][j] * (1 - BACKGROUND_UPDATE_WEIGHT) \
                                                + temp * BACKGROUND_UPDATE_WEIGHT;
             }
@@ -106,7 +105,7 @@ void background_update(float data[TRACKING_WIN_NUM][R_NUM][V_NUM], float backgro
     }
 }
 
-int target_tracking(float difference_matrix[R_NUM][V_NUM], float *range, float *velocity)
+int target_tracking(float difference_matrix[R_NUM][V_NUM], float *range, float *velocity, float diff_energy_line[])
 {
     int ret;
     int i, j;
@@ -127,7 +126,7 @@ int target_tracking(float difference_matrix[R_NUM][V_NUM], float *range, float *
         }
     }
 
-    if (max_val > DIFF_ENERGY_LINE) {
+    if (max_val > diff_energy_line[r_max_val_index]) {
         *range = 0.3750 + 0.3750 * r_max_val_index;
         *velocity = -1.9511 + 0.1626 * v_max_val_index;
         ret = 1;
@@ -139,6 +138,7 @@ int target_tracking(float difference_matrix[R_NUM][V_NUM], float *range, float *
 
     return ret;
 }
+
 
 #define FS_RESPIRATORY          25.2525
 #define RESPIRATION_FFT_NUM     128
@@ -191,4 +191,58 @@ int respiration_detection(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], int ta
 
     free_mem(fft_data);
     return target_index_len;
+}
+
+
+void tracking_check(float difference_matrix[R_NUM][V_NUM], float diff_energy_line[])
+{
+    int i, j;
+
+    for (i = 0; i < R_NUM; i++) {
+        for (j = 0; j < V_NUM ; j++) {
+            if (difference_matrix[i][j] > diff_energy_line[i])
+                diff_energy_line[i] = difference_matrix[i][j];
+        }
+    }
+}
+
+void respiration_check(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], float background_line[])
+{
+    int i = 0, j = 0, target_index_len = 0;
+
+    float lowfreq_amp = 0;
+    float *fft_data;
+
+    fft_data = alloc_mem(RESPIRATION_FFT_NUM * 2 * sizeof(float));
+
+    arm_cfft_instance_f32 CFFT_S_128;
+    arm_cfft_init_f32(&CFFT_S_128, RESPIRATION_FFT_NUM);
+
+    for (i = 0; i < R_NUM; i++) {
+        for (j = 0; j < RESPIRATION_PROCESS_NUM; j++) {
+            fft_data[2 * j] = data[j][2 * i];
+            fft_data[2 * j + 1] = data[j][2 * i + 1];
+        }
+        for (j = RESPIRATION_PROCESS_NUM * 2; j < RESPIRATION_FFT_NUM * 2; j++) {
+            fft_data[j] = 0;
+        }
+
+        arm_cfft_f32(&CFFT_S_128, fft_data, 0, 1);
+        fft_data[0] = 0;
+        fft_data[1] = 0;
+        fft_data[2] = 0;
+        fft_data[3] = 0;
+        arm_cmplx_mag_f32(&fft_data[FREQ_LIMIT_LOW_NUM * 2], fft_data, FREQ_LIMIT_NUM);
+
+        for (j = 0; j < FREQ_LIMIT_NUM; j++) {
+            lowfreq_amp += fft_data[j];
+        }
+        lowfreq_amp /= RESPIRATION_FFT_NUM;
+
+        if (lowfreq_amp > background_line[i])
+            background_line[i] = lowfreq_amp;
+
+    }
+
+    free_mem(fft_data);
 }

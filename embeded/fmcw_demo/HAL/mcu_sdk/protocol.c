@@ -4,7 +4,7 @@
 volatile u8 Flash_data_run;
 
 //extern unsigned long version_num;
-//extern prensence_info_t flash_param;
+extern detect_param_t flash_param;
 
 #ifdef O1_DATA_STREAM
 extern void gpio_output_init(void);
@@ -42,6 +42,8 @@ extern uint8_t adc2_1s_on_enable;
 const DOWNLOAD_CMD_S download_cmd[] =
 {
     {DPID_PIR_DELAY, DP_TYPE_VALUE},                 // Delay time
+
+    {DPID_RANGE_LINE, DP_TYPE_VALUE},                // Range line
 
     {DPID_LOAD_RADAR_PARAMETER, DP_TYPE_ENUM},       // Coverage area
     {DPID_ENTRANCE_PARAMETER, DP_TYPE_ENUM},         // Entrance range
@@ -109,9 +111,9 @@ Instructions for use: please fill the MCU serial port sending function into this
 *****************************************************************************/
 void uart_transmit_output(uint8_t value)
 {
-//    USART_SendData(USART3, value);
-//    while (USART_GetFlagStatus(USART3, USART_FLAG_TXDE) == RESET)
-//        ;
+    USART_SendData(USART1, (uint8_t)value);
+    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
+        ;
 }
 
 void uart_transmit_output2(uint8_t value)
@@ -150,9 +152,13 @@ Instructions for use: this function needs to be called internally in SDK（上�
 
 void all_data_update(void)
 {
-//    mcu_dp_value_update(DPID_PIR_DELAY,
-//                        flash_param.delay_time);     // Delay time
-//    //Ddl_Delay1ms(ALL_UPLOAD_DELAY);
+    mcu_dp_value_update(DPID_PIR_DELAY,
+                        flash_param.delay_times);     // Delay time
+//    Ddl_Delay1ms(ALL_UPLOAD_DELAY);
+
+    mcu_dp_value_update(DPID_RANGE_LINE,
+                    flash_param.range_line);          //Range line
+//    Ddl_Delay1ms(ALL_UPLOAD_DELAY);
 
 //    mcu_dp_enum_update(DPID_ENTRANCE_PARAMETER, flash_param.entrance_range);   // Entrance range
 //    //Ddl_Delay1ms(ALL_UPLOAD_DELAY);
@@ -219,14 +225,14 @@ static uint8_t dp_download_pir_delay_handle(const uint8_t value[],
 #if !defined(ZHIXIN) && !defined(GONGNIU)
     delay_now = delay_now < MIN_DELAY_TIME ? MIN_DELAY_TIME : delay_now;
 #endif
-    //flash_param.delay_time = delay_now;
-    //set_delay_time(delay_now);
+    flash_param.delay_times = delay_now;
+    set_delay_time(delay_now);
 
 #ifdef LONGQUAN
     adc2_1s_on_enable = 1;
 #endif
     // Feedback should be provided after DP data is processed
-    //ret = mcu_dp_value_update(DPID_PIR_DELAY, flash_param.delay_time);
+    ret = mcu_dp_value_update(DPID_PIR_DELAY, flash_param.delay_times);
     if (ret == SUCCESS)
         return SUCCESS;
     else
@@ -275,6 +281,26 @@ static uint8_t dp_download_load_entrance_parameter_handle(const uint8_t value[],
         return SUCCESS;
     else
         return ERROR;
+}
+
+static uint8_t dp_download_range_line_handle(const uint8_t value[],
+                                                   uint16_t length)
+{
+    uint8_t ret;
+    int range_line;
+    int range_line_now;
+
+    range_line = mcu_get_dp_download_value(value, length);
+
+    flash_param.range_line = range_line;
+    set_range_line(range_line);
+
+    ret = mcu_dp_value_update(DPID_RANGE_LINE, flash_param.range_line);
+    if (ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+
 }
 /*****************************************************************************
 Function name : dp_download_find_me_handle
@@ -519,7 +545,10 @@ static uint8_t dp_download_common_command_handle(const uint8_t value[],
             //set_delay_time_adaptive(0);
             break;
         case 0x1E:
-            //set_respiration_adaptive(1);
+            set_respiration_check(1);
+            break;
+        case 0x1F:
+            set_tracking_check(1);
             break;
         case 0x20:      // Actively query the firmware version
             //mcu_dp_value_update(DPID_VERSION_UPLOAD, version_num);
@@ -761,6 +790,9 @@ otherwise the APP will think that the delivery fails
     case DPID_PIR_DELAY:
         // Induction delay processing function
         ret = dp_download_pir_delay_handle(value, length);
+        break;
+    case DPID_RANGE_LINE:
+        ret = dp_download_range_line_handle(value, length);
         break;
     case DPID_LOAD_RADAR_PARAMETER:
         // Load the default parameter handler
