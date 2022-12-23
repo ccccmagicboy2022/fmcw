@@ -18,11 +18,11 @@ Return:
 %}
 
 % 1dfft
-r_fft = fftshift(fft(data, r_fft_num, 1), 1)/ r_fft_num; % Range fft
+r_fft = fftshift(fft(data.* hamming(size(data, 1)), r_fft_num, 1), 1)/ r_fft_num; % Range fft
 r_fft_tar = r_fft(r_min_index: r_max_index, :); % Target range fft
 r_fft_tar_MF = r_fft_tar - mean(r_fft_tar, 2); % Mean filtering
 % 2dfft
-v_fft = fftshift(fft(r_fft_tar_MF, v_fft_num, 2), 2)/ v_fft_num; % Velocity fft
+v_fft = fftshift(fft(r_fft_tar_MF.* hamming(size(r_fft_tar_MF, 2)).', v_fft_num, 2), 2)/ v_fft_num; % Velocity fft
 v_fft_tar = v_fft(:, v_min_index: v_max_index); % Target velocity fft
 v_fft_tar_abs = abs(v_fft_tar); % Target velocity fft abs
 

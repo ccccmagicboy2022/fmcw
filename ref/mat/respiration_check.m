@@ -1,4 +1,4 @@
-function [respiration_locs, respiration_state] = respiration_detection(data, respiration_fft_num, fs_respiration, background_line)
+function [background_line] = respiration_check(data, respiration_fft_num, fs_respiration, background_line)
 
 %{
 Function Name: respiration_detection
@@ -10,8 +10,7 @@ Input:
 	background_line: Background energy line
 Output: None
 Return:
-	respiration_locs: Target range index
-	respiration_state: Target respiration state
+	background_line: Background energy line
 %}
 
 % Space definition
@@ -22,19 +21,12 @@ for i1 = 1: size(data, 1)
     v_fft(i1, :) = fftshift(fft(data(i1, :).* hamming(size(data, 2)).', respiration_fft_num))/ respiration_fft_num;
 end
 v_fft(:, respiration_fft_num/ 2: respiration_fft_num/ 2+ 2) = 0;
-% Respiration detection
+% Checking
 freq_limit_1 = ceil([0.1 0.6]/ (fs_respiration/ respiration_fft_num))+ respiration_fft_num/ 2;
 freq_limit_2 = ceil([-0.6 -0.1]/ (fs_respiration/ respiration_fft_num))+ respiration_fft_num/ 2;
 for i2 = 1: size(v_fft, 1)
 	lowfreq_amp(i2, 1) = max(sum(abs(v_fft(i2, freq_limit_1(1, 1): freq_limit_1(1, 2)))), sum(abs(v_fft(i2, freq_limit_2(1, 1)+ 1: freq_limit_2(1, 2)))));
 end
-target_index = find(lowfreq_amp > background_line);
-if ~isempty(target_index)
-	respiration_locs = target_index;
-	respiration_state = true;
-else
-	respiration_locs = 0;
-	respiration_state = false;
-end
+background_line = max(lowfreq_amp, background_line);
 
 end

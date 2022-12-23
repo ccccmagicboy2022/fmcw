@@ -19,7 +19,7 @@ Return:
 % Target detection
 [~, maxInd_velocity] = max(max(difference_matrix, [], 1)); % Target velocity
 [maxVal_range, maxInd_range] = max(max(difference_matrix, [], 2)); % Target range
-if maxVal_range > diff_energy_line
+if maxVal_range > diff_energy_line(maxInd_range, 1)
 	range = r(r_min_index+ maxInd_range- 1);
 	velocity = vel(v_min_index+ maxInd_velocity- 1);
 else

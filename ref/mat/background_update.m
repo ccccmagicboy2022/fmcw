@@ -17,7 +17,7 @@ Return:
 data_ni = mean(data, 3); % Non-coherent integration
 difference_matrix = data_ni - background_data_matrix; % Difference matrix
 % Background update
-background_update_index = abs(difference_matrix) < background_data_matrix* noise_coefficient; % Background matrix index to be updated
+background_update_index = difference_matrix < background_data_matrix* noise_coefficient; % Background matrix index to be updated
 background_data_matrix(background_update_index) = background_data_matrix(background_update_index)* (1- background_update_weight) + data_ni(background_update_index)* background_update_weight; % Background matrix update
 
 end
