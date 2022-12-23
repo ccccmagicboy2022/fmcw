@@ -10,8 +10,6 @@ typedef enum
 } output_result_t_fmcw;
 
 typedef struct {
-    uint32_t magic_num;
-    uint32_t crc;
     uint32_t delay_times;
     float range_line;
     float background_line[16];

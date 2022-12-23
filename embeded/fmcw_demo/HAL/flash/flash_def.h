@@ -32,7 +32,13 @@
 #define     FLASH_LENGTH_CRC_MAGIC  (8U)
 #define     MAGIC_NUM               (0x5AA5A55A)
 
-extern void Flash_Write(uint8_t u8Len, detect_param_t *current_detect_param);
+typedef struct {
+    uint32_t magic_num;
+    uint32_t crc;
+    detect_param_t detect_param_info;
+} prensence_info_t;
+
+extern void Flash_Write(uint8_t u8Len, prensence_info_t *current_detect_param);
 extern void Flash_SectorErase(void);
 extern void Flash_Init_3(void);
 uint32_t GetSector(uint32_t Address);

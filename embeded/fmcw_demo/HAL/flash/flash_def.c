@@ -1,16 +1,17 @@
 #include "flash_def.h"
-#include "sys.h"
 
 #define     __IO           volatile
 //typedef     __IO uint32_t  vu32;
 
-detect_param_t flash_param, default_param = {
+prensence_info_t flash_param, default_param = {
     .magic_num = MAGIC_NUM,
     .crc = 0,
-    .delay_times = DELAY_TIME,
-    .range_line = RANGE_LINE,
-    .background_line = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40},
-    .diff_energy_line = {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75},
+    .detect_param_info ={
+        .delay_times = DELAY_TIME,
+        .range_line = RANGE_LINE,
+        .background_line = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40},
+        .diff_energy_line = {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75},
+    }
 };
 
 /*
@@ -23,10 +24,11 @@ detect_param_t flash_param, default_param = {
 * Return value: none
 *********************************************************************************************************
 */
-void Flash_Write(uint8_t u8Len, detect_param_t *current_detect_param)
+void Flash_Write(uint8_t u8Len, prensence_info_t *current_detect_param)
 {
     uint32_t Counter_Num = 0;
-    current_detect_param->crc = calculate_CRC32((uint32_t*)&current_detect_param->delay_times, sizeof(detect_param_t) - FLASH_LENGTH_CRC_MAGIC);
+    current_detect_param->crc = calculate_CRC32((uint32_t*)&current_detect_param->detect_param_info, 
+                        sizeof(current_detect_param->detect_param_info));
 
     __set_PRIMASK(1);
     FLASH_Unlock();
@@ -111,7 +113,7 @@ void Flash_Init_3()
     else {
         read_crc = *((uint32_t *)ADDR_FLASH_SECTOR_3 + FLASH_ADDR_OFFSET_CRC);
 
-        crc_value = calculate_CRC32((uint32_t*)(ADDR_FLASH_SECTOR_3 + FLASH_LENGTH_CRC_MAGIC), sizeof(flash_param) - FLASH_LENGTH_CRC_MAGIC);
+        crc_value = calculate_CRC32((uint32_t*)(ADDR_FLASH_SECTOR_3 + FLASH_LENGTH_CRC_MAGIC), sizeof(flash_param.detect_param_info));
 
         if (crc_value == read_crc) {
             for (int i = 0; i < sizeof(flash_param) / 4; i++)
@@ -121,10 +123,10 @@ void Flash_Init_3()
           }
     }
 
-    set_delay_time(flash_param.delay_times);
-    set_range_line(flash_param.range_line);
-    set_background_line(&flash_param);
-    set_diff_energy_line(&flash_param);
+    set_delay_time(flash_param.detect_param_info.delay_times);
+    set_range_line(flash_param.detect_param_info.range_line);
+    set_background_line(&flash_param.detect_param_info);
+    set_diff_energy_line(&flash_param.detect_param_info);
 }
 uint32_t GetSector(uint32_t Address)
 {
@@ -233,7 +235,7 @@ uint32_t GetSector(uint32_t Address)
 
 void check_success(uint8_t dpid)
 {
-    get_detect_param(&flash_param);
+    get_detect_param(&flash_param.detect_param_info);
     Flash_Write(sizeof(flash_param), &flash_param);
     mcu_dp_enum_update(dpid, 1);
 }

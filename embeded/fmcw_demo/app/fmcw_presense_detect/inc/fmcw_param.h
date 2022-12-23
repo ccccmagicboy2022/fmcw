@@ -63,11 +63,11 @@
 
 /* respiration check */
 #define RESPIRATION_CHECK_TIMES             (20U)
-#define RESPIRATION_CHECK_WEIGHT            (1.2f)
+#define RESPIRATION_CHECK_WEIGHT            (1.5f)
 
 /* tracking check */
 #define TACKING_CHECK_TIMES                 (300U)
-#define TACKING_CHECK_WEIGHT                (1.2f)
+#define TACKING_CHECK_WEIGHT                (1.5f)
 
 #define DELAY_TIME                          (10U)
 

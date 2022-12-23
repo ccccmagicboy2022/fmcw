@@ -1036,6 +1036,11 @@
               <FileType>1</FileType>
               <FilePath>..\app\fmcw_presense_detect\src\presence_detection_fmcw.c</FilePath>
             </File>
+            <File>
+              <FileName>hamming.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\fmcw_presense_detect\src\hamming.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1062,6 +1067,7 @@
     <Layers>
       <Layer>
         <LayName>test_gpio</LayName>
+        <LayTarg>0</LayTarg>
         <LayPrjMark>1</LayPrjMark>
       </Layer>
     </Layers>

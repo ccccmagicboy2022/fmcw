@@ -4,6 +4,7 @@
 #include "arm_math.h"
 #include "functions.h"
 #include "memalloc.h"
+#include "hamming.h"
 
 #define ROW_LEN 128
 #define COL_LEN 16
@@ -29,7 +30,7 @@ void td_fft(const uint16_t frame_data[COL_LEN][ROW_LEN], float *rfft_tar_sum, fl
 
     for (i = 0; i < COL_LEN; i++) {
         for (j = 0; j < ROW_LEN; j++) {
-            fft_row_in[j] = frame_data[i][j];
+            fft_row_in[j] = frame_data[i][j] * hamming_TAB128[j];
         }
         for (j = ROW_LEN; j < FFT_ROW_NUM; j++) {
             fft_row_in[j] = 0;
@@ -60,8 +61,8 @@ void td_fft(const uint16_t frame_data[COL_LEN][ROW_LEN], float *rfft_tar_sum, fl
 
     for (i = 0; i < R_NUM; i++) {
         for (j = 0; j < COL_LEN; j++) {
-            fft_col[2 * j] = r_fft_tar[j][2 * i];
-            fft_col[2 * j + 1] = r_fft_tar[j][2 * i + 1];
+            fft_col[2 * j] = r_fft_tar[j][2 * i] * hamming_TAB16[j];
+            fft_col[2 * j + 1] = r_fft_tar[j][2 * i + 1] * hamming_TAB16[j];
         }
         for (j = COL_LEN * 2; j < FFT_COL_NUM * 2; j++) {
             fft_col[j] = 0;
@@ -140,20 +141,21 @@ int target_tracking(float difference_matrix[R_NUM][V_NUM], float *range, float *
 }
 
 
-#define FS_RESPIRATORY          25.2525
-#define RESPIRATION_FFT_NUM     128
-#define FREQ_LIMIT_LOW          0.1f
-#define FREQ_LIMIT_HIGH         3.0f
-#define FREQ_LIMIT_LOW_NUM      ((int)(FREQ_LIMIT_LOW / (FS_RESPIRATORY / RESPIRATION_FFT_NUM)))
-#define FREQ_LIMIT_HIGH_NUM     ((int)(FREQ_LIMIT_HIGH / (FS_RESPIRATORY / RESPIRATION_FFT_NUM)))
-#define FREQ_LIMIT_NUM          (FREQ_LIMIT_HIGH_NUM - FREQ_LIMIT_LOW_NUM + 1)
+#define FS_RESPIRATORY                      25.2525
+#define RESPIRATION_FFT_NUM                 128
+#define FREQ_LIMIT_LOW                      0.1f
+#define FREQ_LIMIT_HIGH                     0.6f
+#define FREQ_LIMIT_LOW_NUM                  ((int)(FREQ_LIMIT_LOW / (FS_RESPIRATORY / RESPIRATION_FFT_NUM)))
+#define FREQ_LIMIT_HIGH_NUM                 ((int)(FREQ_LIMIT_HIGH / (FS_RESPIRATORY / RESPIRATION_FFT_NUM)))
+#define PLUS_FREQ_LIMIT_NUM                 (FREQ_LIMIT_HIGH_NUM - FREQ_LIMIT_LOW_NUM + 1)
 
+#define MINUS_FREQ_LIMIT_NUM                (PLUS_FREQ_LIMIT_NUM - 1)
+#define MINUS_FREQ_LIMIT_LOW_NUM            (RESPIRATION_FFT_NUM - MINUS_FREQ_LIMIT_NUM)
 
-int respiration_detection(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], int target_index[])
+int respiration_detection(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], int target_index[], float background_line[])
 {
     int i = 0, j = 0, target_index_len = 0;
-
-    float lowfreq_amp = 0;
+    float plus_freq_amp = 0, minus_freq_amp = 0, lowfreq_amp = 0;
     float *fft_data;
 
     fft_data = alloc_mem(RESPIRATION_FFT_NUM * 2 * sizeof(float));
@@ -163,8 +165,8 @@ int respiration_detection(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], int ta
 
     for (i = 0; i < R_NUM; i++) {
         for (j = 0; j < RESPIRATION_PROCESS_NUM; j++) {
-            fft_data[2 * j] = data[j][2 * i];
-            fft_data[2 * j + 1] = data[j][2 * i + 1];
+            fft_data[2 * j] = data[j][2 * i] * hamming_TAB128[j];
+            fft_data[2 * j + 1] = data[j][2 * i + 1] * hamming_TAB128[j];
         }
         for (j = RESPIRATION_PROCESS_NUM * 2; j < RESPIRATION_FFT_NUM * 2; j++) {
             fft_data[j] = 0;
@@ -175,13 +177,23 @@ int respiration_detection(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], int ta
         fft_data[1] = 0;
         fft_data[2] = 0;
         fft_data[3] = 0;
-        arm_cmplx_mag_f32(&fft_data[FREQ_LIMIT_LOW_NUM * 2], fft_data, FREQ_LIMIT_NUM);
-
-        for (j = 0; j < FREQ_LIMIT_NUM; j++) {
-            lowfreq_amp += fft_data[j];
+        fft_data[2 * (RESPIRATION_FFT_NUM - 1)] = 0;
+        fft_data[2 * (RESPIRATION_FFT_NUM - 1) + 1] = 0;
+        arm_cmplx_mag_f32(&fft_data[FREQ_LIMIT_LOW_NUM * 2], fft_data, PLUS_FREQ_LIMIT_NUM);
+        for (j = 0; j < PLUS_FREQ_LIMIT_NUM; j++) {
+            plus_freq_amp += fft_data[j];
         }
-        lowfreq_amp /= RESPIRATION_FFT_NUM;
-        if (lowfreq_amp > BACKGROUND_LINE) {
+
+        arm_cmplx_mag_f32(&fft_data[MINUS_FREQ_LIMIT_LOW_NUM * 2], fft_data, MINUS_FREQ_LIMIT_NUM);
+        for (j = 0; j < MINUS_FREQ_LIMIT_NUM; j++) {
+            minus_freq_amp += fft_data[j];
+        }
+
+        plus_freq_amp /= RESPIRATION_FFT_NUM;
+        minus_freq_amp /= RESPIRATION_FFT_NUM;
+
+        lowfreq_amp = (plus_freq_amp > minus_freq_amp) ? plus_freq_amp : minus_freq_amp;
+        if (lowfreq_amp > background_line[i]) {
             target_index[i] = 1;
             target_index_len++;
         } else {
@@ -190,9 +202,9 @@ int respiration_detection(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], int ta
     }
 
     free_mem(fft_data);
+
     return target_index_len;
 }
-
 
 void tracking_check(float difference_matrix[R_NUM][V_NUM], float diff_energy_line[])
 {
@@ -209,8 +221,7 @@ void tracking_check(float difference_matrix[R_NUM][V_NUM], float diff_energy_lin
 void respiration_check(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], float background_line[])
 {
     int i = 0, j = 0, target_index_len = 0;
-
-    float lowfreq_amp = 0;
+    float plus_freq_amp = 0, minus_freq_amp = 0, lowfreq_amp = 0;
     float *fft_data;
 
     fft_data = alloc_mem(RESPIRATION_FFT_NUM * 2 * sizeof(float));
@@ -220,8 +231,8 @@ void respiration_check(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], float bac
 
     for (i = 0; i < R_NUM; i++) {
         for (j = 0; j < RESPIRATION_PROCESS_NUM; j++) {
-            fft_data[2 * j] = data[j][2 * i];
-            fft_data[2 * j + 1] = data[j][2 * i + 1];
+            fft_data[2 * j] = data[j][2 * i] * hamming_TAB128[j];
+            fft_data[2 * j + 1] = data[j][2 * i + 1] * hamming_TAB128[j];
         }
         for (j = RESPIRATION_PROCESS_NUM * 2; j < RESPIRATION_FFT_NUM * 2; j++) {
             fft_data[j] = 0;
@@ -232,16 +243,24 @@ void respiration_check(float data[RESPIRATION_PROCESS_NUM][R_NUM * 2], float bac
         fft_data[1] = 0;
         fft_data[2] = 0;
         fft_data[3] = 0;
-        arm_cmplx_mag_f32(&fft_data[FREQ_LIMIT_LOW_NUM * 2], fft_data, FREQ_LIMIT_NUM);
-
-        for (j = 0; j < FREQ_LIMIT_NUM; j++) {
-            lowfreq_amp += fft_data[j];
+        fft_data[2 * (RESPIRATION_FFT_NUM - 1)] = 0;
+        fft_data[2 * (RESPIRATION_FFT_NUM - 1) + 1] = 0;
+        arm_cmplx_mag_f32(&fft_data[FREQ_LIMIT_LOW_NUM * 2], fft_data, PLUS_FREQ_LIMIT_NUM);
+        for (j = 0; j < PLUS_FREQ_LIMIT_NUM; j++) {
+            plus_freq_amp += fft_data[j];
         }
-        lowfreq_amp /= RESPIRATION_FFT_NUM;
 
+        arm_cmplx_mag_f32(&fft_data[MINUS_FREQ_LIMIT_LOW_NUM * 2], fft_data, MINUS_FREQ_LIMIT_NUM);
+        for (j = 0; j < MINUS_FREQ_LIMIT_NUM; j++) {
+            minus_freq_amp += fft_data[j];
+        }
+
+        plus_freq_amp /= RESPIRATION_FFT_NUM;
+        minus_freq_amp /= RESPIRATION_FFT_NUM;
+
+        lowfreq_amp = (plus_freq_amp > minus_freq_amp) ? plus_freq_amp : minus_freq_amp;
         if (lowfreq_amp > background_line[i])
             background_line[i] = lowfreq_amp;
-
     }
 
     free_mem(fft_data);

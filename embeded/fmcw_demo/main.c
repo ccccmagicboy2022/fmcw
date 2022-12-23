@@ -3,13 +3,13 @@
 s16 data_buf[SAMPLE_NUM_PER_CHIRP * NUM_CHIRPS_PER_FRAME];
 
 uint8_t matlab_debug_use_flag;
-
-extern detect_param_t flash_param;
+uint8_t flash_finished = 0;
+extern prensence_info_t flash_param;
 
 int32_t main(void)
 {
     output_result_t_fmcw fmcw_result;
-	
+
     usb_hs_init();
 
 #ifdef SEND_TO_MATLAB_TEST
@@ -41,7 +41,10 @@ int32_t main(void)
                 #endif
                 detect(data_buf, &fmcw_result);
             #else
-                detect(data_buf, &fmcw_result);
+                if (flash_finished == 0)
+                    detect(data_buf, &fmcw_result);
+                else
+                    flash_finished = 0;
 
                 if (fmcw_result) {
                     GPIO_O_HIGH;
@@ -54,11 +57,13 @@ int32_t main(void)
             if (inquire_tracking_check_status() != 0 && inquire_tracking_check_finished()) {
                 set_tracking_check(0);
                 check_success(DPID_TEACKING_CHECK);
+                flash_finished = 1;
             }
 
             if (inquire_respiration_check_status() != 0 && inquire_respiration_check_finished()) {
                 set_respiration_check(0);
                 check_success(DPID_RESPIRATION_CHECK);
+                flash_finished = 1;
             }
         }
     }

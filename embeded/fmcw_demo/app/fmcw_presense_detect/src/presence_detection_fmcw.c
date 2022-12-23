@@ -48,6 +48,7 @@ void set_respiration_check(u8 enable)
         memset(&detect_param.background_line, 0, sizeof(detect_param.background_line));
         respiration_check_flag = 1;
         presence_flag = 1;
+        frame_index = 0;
     } else {
         respiration_check_flag = 0;
         presence_flag = 0;
@@ -68,13 +69,16 @@ void set_tracking_check(u8 enable)
 
 void set_delay_time(int delay_time)
 {
-    detect_param.delay_times = delay_time;
+    if (delay_time > 0) {
+        detect_param.delay_times = delay_time;
+        delay_times = ceil(detect_param.delay_times / RESPIRATION_STEP_TIME);
+    }
 }
 
 void set_range_line(int range_line)
 {
-    detect_param.range_line = range_line;
-
+    if (range_line > 0)
+        detect_param.range_line = range_line;
 }
 
 void set_background_line(detect_param_t *current_detect_param)
@@ -87,7 +91,6 @@ void set_diff_energy_line(detect_param_t *current_detect_param)
 {
     memcpy(detect_param.diff_energy_line,
             current_detect_param->diff_energy_line, sizeof(detect_param.diff_energy_line));
-
 }
 
 void get_detect_param(detect_param_t *current_detect_param)
@@ -156,6 +159,8 @@ void detect_presence(void) {
                 frame_index = 0;
             }
         }
+        if (frame_index > RESPIRATION_STEP_PROCESS_NUM)
+            frame_index = 0;
     }
     free_mem(difference_matrix);
 
@@ -175,7 +180,7 @@ void detect_presence(void) {
         } else {
             respiration_locs = alloc_mem(RESPIRATION_LOCS_NUM * sizeof(int));
 
-            respiration_state = respiration_detection(respiration_data_matrix, respiration_locs);
+            respiration_state = respiration_detection(respiration_data_matrix, respiration_locs, detect_param.background_line);
 
             memcpy(respiration_judge_matrix[respiration_judge_index],
                  respiration_locs, RESPIRATION_LOCS_NUM * sizeof(int));
@@ -185,7 +190,6 @@ void detect_presence(void) {
             if (respiration_judge_index >= RESPIRATION_TOTAL_TIMES) {
                 respiration_judge_flag = 1;
                 respiration_judge_index = 0;
-                delay_times = ceil(detect_param.delay_times / RESPIRATION_STEP_TIME);
             }
 
             if (respiration_judge_flag) {
@@ -198,6 +202,7 @@ void detect_presence(void) {
                         presence_flag = 0;
                         respiration_judge_flag = 0;
                         respiration_judge_index = 0;
+                        delay_times = ceil(detect_param.delay_times / RESPIRATION_STEP_TIME);
                     }
                 }
             }
